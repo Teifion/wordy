@@ -1,0 +1,3 @@
+This Scrabble game was designed to be used primarily as part of a Pyramid application (using SQLAlchemy) but at the same time to be as pluggable as possible. All the Pyramid related code is thus in the scrabble_views and scrabble_models.
+
+I got the wordlist from http://homepage.ntlworld.com/adam.bozon/scrabblelists.htm, there are loads of other very cool word lists on that page, well worth a look at too.

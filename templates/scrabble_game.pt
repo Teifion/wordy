@@ -1,0 +1,98 @@
+<div metal:use-macro="layout">
+    <style type="text/css" media="screen" metal:fill-slot="css">
+        #scrabble_board
+        {
+            margin: 0;
+            padding: 0;
+            background-image: url('${request.static_url('dashboard:static/games/scrabble/board.png')}');
+            background-repeat: no-repeat;
+            width: 751px;
+            height: 751px;
+        }
+        
+        #scrabble_board td
+        {
+            width: 50px;
+            height: 50px;
+            margin: 0;
+            padding: 0;
+            border: 0px solid #000;
+        }
+        
+        #scrabble_board td div,
+        #scrabble_board .a,
+        #scrabble_board .b,
+        #scrabble_board .c,
+        #scrabble_board .d,
+        #scrabble_board .e,
+        #scrabble_board .f,
+        #scrabble_board .g,
+        #scrabble_board .h,
+        #scrabble_board .i,
+        #scrabble_board .j,
+        #scrabble_board .k,
+        #scrabble_board .l,
+        #scrabble_board .m,
+        #scrabble_board .n,
+        #scrabble_board .o,
+        #scrabble_board .p,
+        #scrabble_board .q,
+        #scrabble_board .r,
+        #scrabble_board .s,
+        #scrabble_board .t,
+        #scrabble_board .u,
+        #scrabble_board .v,
+        #scrabble_board .w,
+        #scrabble_board .x,
+        #scrabble_board .y,
+        #scrabble_board .z
+        {
+            width: 50px;
+            height: 50px;
+            background-image:url('${request.static_url('dashboard:static/games/scrabble/letters.png')}');
+            background-position: 50px 50px;
+            background-repeat: no-repeat;
+            cursor: pointer;
+        }
+        
+        #scrabble_board .a {background-position: -7px -7px;}
+        #scrabble_board .b {background-position: -72px -7px;}
+        #scrabble_board .c {background-position: -137px -7px;}
+        #scrabble_board .d {background-position: -202px -7px;}
+        #scrabble_board .e {background-position: -267px -7px;}
+        #scrabble_board .f {background-position: -332px -7px;}
+        #scrabble_board .g {background-position: -397px -7px;}
+        #scrabble_board .h {background-position: -462px -7px;}
+        #scrabble_board .i {background-position: -527px -7px;}
+        #scrabble_board .j {background-position: -592px -7px;}
+        #scrabble_board .k {background-position: -657px -7px;}
+        #scrabble_board .l {background-position: -722px -7px;}
+        #scrabble_board .m {background-position: -787px -7px;}
+        #scrabble_board .n {background-position: -852px -7px;}
+        #scrabble_board .o {background-position: -917px -7px;}
+        #scrabble_board .p {background-position: -982px -7px;}
+        #scrabble_board .q {background-position: -1047px -7px;}
+        #scrabble_board .r {background-position: -1112px -7px;}
+        #scrabble_board .s {background-position: -1177px -7px;}
+        #scrabble_board .t {background-position: -1242px -7px;}
+        #scrabble_board .u {background-position: -1307px -7px;}
+        #scrabble_board .v {background-position: -1372px -7px;}
+        #scrabble_board .w {background-position: -1437px -7px;}
+        #scrabble_board .x {background-position: -1502px -7px;}
+        #scrabble_board .y {background-position: -1567px -7px;}
+        #scrabble_board .z {background-position: -1632px -7px;}
+    </style>
+    
+    <div metal:fill-slot="content">
+        <div id="scrabble_board">
+            <table cellpadding="0" cellspacing="0">
+                <tr tal:repeat="row the_board">
+                    <td tal:repeat="tile row">
+                        <div tal:condition="tile == ' '" class="letter">&nbsp;</div>
+                        <div tal:condition="tile != ' '" class="${tile}">&nbsp;</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
