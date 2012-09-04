@@ -10,11 +10,11 @@ from ...models import (
     DBSession,
 )
 
-from . import scrabble_functions
+from . import wordy_functions
 import sys
 
-@view_config(route_name='games/scrabble/init', renderer='templates/scrabble_blank.pt', permission='view')
-def scrabble_init(request):
+@view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='view')
+def wordy_init(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
     if "form.submitted" in request.params:
@@ -36,12 +36,12 @@ def scrabble_init(request):
         )
         
         # Build query
-        query = "INSERT INTO scrabble_words (word) VALUES {}".format(
+        query = "INSERT INTO wordy_words (word) VALUES {}".format(
             ",".join(["('%s')" % w.replace("'", "''") for w in word_list])
         )
         
         with transaction.manager:
-            DBSession.execute("DELETE FROM scrabble_words")
+            DBSession.execute("DELETE FROM wordy_words")
             DBSession.execute(query)
             DBSession.execute("COMMIT")
         
@@ -57,61 +57,61 @@ def scrabble_init(request):
             <input type="submit" name="form.submitted" />
         </form>
         """.format(
-            route = request.route_url('games/scrabble/init')
+            route = request.route_url('games/wordy/init')
         )
     
     
     return dict(
-        title   = "Scrabble",
+        title   = "wordy",
         layout  = layout,
         content = content,
     )
 
-@view_config(route_name='games/scrabble', renderer='scrabble_game.pt', permission='view')
-def scrabble_menu(request):
+@view_config(route_name='games/wordy', renderer='wordy_game.pt', permission='view')
+def wordy_menu(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
     return dict(
-        title         = "Scrabble",
+        title         = "wordy",
         layout        = layout,
     )
 
-@view_config(route_name='games/scrabble/game', renderer='scrabble_game.pt', permission='view')
+@view_config(route_name='games/wordy/game', renderer='wordy_game.pt', permission='view')
 def view_game(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
     board_string = 'abcdefghijklmnopqrstuvwxyz' + ' '*229
-    the_board = scrabble_functions.string_to_board(board_string)
+    the_board = wordy_functions.string_to_board(board_string)
     
     return dict(
-        title         = "Scrabble",
+        title         = "wordy",
         the_board     = the_board,
         layout        = layout,
     )
 
-@view_config(route_name='games/scrabble/make_move', renderer='scrabble_game.pt', permission='view')
+@view_config(route_name='games/wordy/make_move', renderer='wordy_game.pt', permission='view')
 def make_move(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
     return dict(
-        title         = "Scrabble",
+        title         = "wordy",
         layout        = layout,
     )
 
-@view_config(route_name='games/scrabble/check_status', renderer='scrabble_game.pt', permission='view')
+@view_config(route_name='games/wordy/check_status', renderer='wordy_game.pt', permission='view')
 def check_status(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
     return dict(
-        title         = "Scrabble",
+        title         = "wordy",
         layout        = layout,
     )
 
-@view_config(route_name='games/scrabble/get_updated_board', renderer='scrabble_game.pt', permission='view')
+@view_config(route_name='games/wordy/get_updated_board', renderer='wordy_game.pt', permission='view')
 def get_updated_board(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
     return dict(
-        title         = "Scrabble",
+        title         = "wordy",
         layout        = layout,
     )

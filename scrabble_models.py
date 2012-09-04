@@ -9,8 +9,8 @@ from sqlalchemy import (
 # You will need to point this to wherever your declarative base is
 from ...models import Base
 
-class ScrabbleGame(Base):
-    __tablename__ = 'scrabble_games'
+class wordyGame(Base):
+    __tablename__ = 'wordy_games'
     id          = Column(Integer, primary_key=True)
     turn        = Column(Integer, nullable=False, default=0)
     turn_log    = Column(Text, nullable=False, default='')
@@ -28,7 +28,7 @@ class ScrabbleGame(Base):
     player3     = Column(Integer, ForeignKey("users.id"), nullable=True, unique=True)
     player4     = Column(Integer, ForeignKey("users.id"), nullable=True, unique=True)
 
-class ScrabbleWord(Base):
-    __tablename__ = 'scrabble_words'
+class wordyWord(Base):
+    __tablename__ = 'wordy_words'
     id   = Column(Integer, primary_key=True)
     word = Column(String, nullable=False)
