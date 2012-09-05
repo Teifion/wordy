@@ -4,12 +4,12 @@ from sqlalchemy import (
     Text,
     String,
     ForeignKey,
-    )
+)
 
 # You will need to point this to wherever your declarative base is
 from ...models import Base
 
-class wordyGame(Base):
+class WordyGame(Base):
     __tablename__ = 'wordy_games'
     id          = Column(Integer, primary_key=True)
     turn        = Column(Integer, nullable=False, default=0)
@@ -23,12 +23,14 @@ class wordyGame(Base):
     board       = Column(String, nullable=False, default=' '*255)
     
     # We're assuming a table called users with a property of "id"
-    player1     = Column(Integer, ForeignKey("users.id"), nullable=True, unique=True)
-    player2     = Column(Integer, ForeignKey("users.id"), nullable=True, unique=True)
-    player3     = Column(Integer, ForeignKey("users.id"), nullable=True, unique=True)
-    player4     = Column(Integer, ForeignKey("users.id"), nullable=True, unique=True)
+    # I would normally have used PostgreSQL arrays but wanted to keep
+    # it database agnostic
+    player1     = Column(Integer, ForeignKey("users.id"))
+    player2     = Column(Integer, ForeignKey("users.id"))
+    player3     = Column(Integer, ForeignKey("users.id"), nullable=True)
+    player4     = Column(Integer, ForeignKey("users.id"), nullable=True)
 
-class wordyWord(Base):
+class WordyWord(Base):
     __tablename__ = 'wordy_words'
     id   = Column(Integer, primary_key=True)
     word = Column(String, nullable=False)

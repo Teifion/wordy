@@ -1,0 +1,15 @@
+<div metal:use-macro="layout">
+    <div metal:fill-slot="content">
+        
+        <a href="${request.route_url}" class="inbutton">New game</a>
+        
+        <div style="border:1px solid #000;" tal:repeat="the_game game_list">
+            Turn: ${the_game.turn}<br />
+            Players:
+                ${usernames[the_game.player1]}, ${usernames[the_game.player2]}<span tal:condition="the_game.player3">, ${usernames[the_game.player3]}</span><span tal:condition="the_game.player4">, ${usernames[the_game.player4]}</span>
+            
+        </div>
+        
+        
+    </div>
+</div>
