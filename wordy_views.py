@@ -111,9 +111,10 @@ def view_game(request):
     the_board = wordy_functions.string_to_board(board_string)
     
     return dict(
-        title         = "wordy",
-        the_board     = the_board,
-        layout        = layout,
+        title        = "wordy",
+        layout       = layout,
+        the_board    = the_board,
+        player_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
     )
 
 @view_config(route_name='games/wordy/make_move', renderer='templates/wordy_game.pt', permission='view')

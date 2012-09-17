@@ -19,33 +19,33 @@
             border: 0px solid #000;
         }
         
-        #wordy_board td div,
-        #wordy_board .a,
-        #wordy_board .b,
-        #wordy_board .c,
-        #wordy_board .d,
-        #wordy_board .e,
-        #wordy_board .f,
-        #wordy_board .g,
-        #wordy_board .h,
-        #wordy_board .i,
-        #wordy_board .j,
-        #wordy_board .k,
-        #wordy_board .l,
-        #wordy_board .m,
-        #wordy_board .n,
-        #wordy_board .o,
-        #wordy_board .p,
-        #wordy_board .q,
-        #wordy_board .r,
-        #wordy_board .s,
-        #wordy_board .t,
-        #wordy_board .u,
-        #wordy_board .v,
-        #wordy_board .w,
-        #wordy_board .x,
-        #wordy_board .y,
-        #wordy_board .z
+        .letter,
+        .la,
+        .lb,
+        .lc,
+        .ld,
+        .le,
+        .lf,
+        .lg,
+        .lh,
+        .li,
+        .lj,
+        .lk,
+        .ll,
+        .lm,
+        .ln,
+        .lo,
+        .lp,
+        .lq,
+        .lr,
+        .ls,
+        .lt,
+        .lu,
+        .lv,
+        .lw,
+        .lx,
+        .ly,
+        .lz
         {
             width: 50px;
             height: 50px;
@@ -55,44 +55,81 @@
             cursor: pointer;
         }
         
-        #wordy_board .a {background-position: -7px -7px;}
-        #wordy_board .b {background-position: -72px -7px;}
-        #wordy_board .c {background-position: -137px -7px;}
-        #wordy_board .d {background-position: -202px -7px;}
-        #wordy_board .e {background-position: -267px -7px;}
-        #wordy_board .f {background-position: -332px -7px;}
-        #wordy_board .g {background-position: -397px -7px;}
-        #wordy_board .h {background-position: -462px -7px;}
-        #wordy_board .i {background-position: -527px -7px;}
-        #wordy_board .j {background-position: -592px -7px;}
-        #wordy_board .k {background-position: -657px -7px;}
-        #wordy_board .l {background-position: -722px -7px;}
-        #wordy_board .m {background-position: -787px -7px;}
-        #wordy_board .n {background-position: -852px -7px;}
-        #wordy_board .o {background-position: -917px -7px;}
-        #wordy_board .p {background-position: -982px -7px;}
-        #wordy_board .q {background-position: -1047px -7px;}
-        #wordy_board .r {background-position: -1112px -7px;}
-        #wordy_board .s {background-position: -1177px -7px;}
-        #wordy_board .t {background-position: -1242px -7px;}
-        #wordy_board .u {background-position: -1307px -7px;}
-        #wordy_board .v {background-position: -1372px -7px;}
-        #wordy_board .w {background-position: -1437px -7px;}
-        #wordy_board .x {background-position: -1502px -7px;}
-        #wordy_board .y {background-position: -1567px -7px;}
-        #wordy_board .z {background-position: -1632px -7px;}
+        .la {background-position: -7px -7px;}
+        .lb {background-position: -72px -7px;}
+        .lc {background-position: -137px -7px;}
+        .ld {background-position: -202px -7px;}
+        .le {background-position: -267px -7px;}
+        .lf {background-position: -332px -7px;}
+        .lg {background-position: -397px -7px;}
+        .lh {background-position: -462px -7px;}
+        .li {background-position: -527px -7px;}
+        .lj {background-position: -592px -7px;}
+        .lk {background-position: -657px -7px;}
+        .ll {background-position: -722px -7px;}
+        .lm {background-position: -787px -7px;}
+        .ln {background-position: -852px -7px;}
+        .lo {background-position: -917px -7px;}
+        .lp {background-position: -982px -7px;}
+        .lq {background-position: -1047px -7px;}
+        .lr {background-position: -1112px -7px;}
+        .ls {background-position: -1177px -7px;}
+        .lt {background-position: -1242px -7px;}
+        .lu {background-position: -1307px -7px;}
+        .lv {background-position: -1372px -7px;}
+        .lw {background-position: -1437px -7px;}
+        .lx {background-position: -1502px -7px;}
+        .ly {background-position: -1567px -7px;}
+        .lz {background-position: -1632px -7px;}
+        
+        .draggable_letter
+        {
+            float:left;
+        }
+        
+        #tray_wrapper
+        {
+            height: 50px;
+            border:1px solid #000;
+        }
+        
+        .letter_tray
+        {
+            border: 1px solid #F00;
+            width: 50px;
+            height: 50px;
+            display: inline-block;
+        }
+        
+        #wordy_frame
+        {
+            border: 1px solid #F00;
+        }
     </style>
     
     <div metal:fill-slot="content">
-        <div id="wordy_board">
-            <table cellpadding="0" cellspacing="0">
-                <tr tal:repeat="row the_board">
-                    <td tal:repeat="tile row">
-                        <div tal:condition="tile == ' '" class="letter">&nbsp;</div>
-                        <div tal:condition="tile != ' '" class="${tile}">&nbsp;</div>
-                    </td>
-                </tr>
-            </table>
+        <script type="text/javascript">
+            var the_board = ${the_board};
+            var player_letters = ${player_letters};
+        </script>
+        <script type="text/javascript" src="${request.static_url('dashboard:static/games/wordy/wordy.js')}"></script>
+        
+        <div id="wordy_frame">
+            <div style="float:right; width:340px;">
+                <div class="button" style="float:left;" id="reset_button">Reset</div>
+                <div class="button" style="float:left;" id="recall_button">Recall</div>
+            </div>
+            <div id="wordy_board">
+                &nbsp;
+            </div>
+            <div id="tray_wrapper">
+                &nbsp;
+            </div>
         </div>
+        <form action="request.route('games/wordy/make_move')" method="post" accept-charset="utf-8" id="move_maker">
+            <input type="hhidden" name="letter${i}" id="letter${i}" value="${i}" tal:repeat="i range(7)" />
+            
+            <input type="submit" value="Continue &rarr;" />
+        </form>
     </div>
 </div>
