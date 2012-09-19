@@ -107,24 +107,31 @@ def wordy_menu(request):
 def view_game(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
-    board_string = 'abcdefghijklmnopqrstuvwxyz' + ' '*229
-    the_board = wordy_functions.string_to_board(board_string)
+    game_id = int(request.matchdict['game_id'])
+    
+    the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
+    
+    the_board = wordy_functions.string_to_board(the_game.board.lower())
     
     return dict(
         title        = "wordy",
         layout       = layout,
         the_board    = the_board,
-        player_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+        player_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+        the_game = the_game,
     )
 
-@view_config(route_name='games/wordy/make_move', renderer='templates/wordy_game.pt', permission='view')
+@view_config(route_name='games/wordy/make_move', renderer='string', permission='view')
 def make_move(request):
-    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    result = []
+    for k, v in request.params.items():
+        result.append(str((k, v)))
     
-    return dict(
-        title         = "wordy",
-        layout        = layout,
-    )
+    result = "refresh"
+    result = "failure:ADDER is not a valid word"
+    
+    return result
+    
 
 @view_config(route_name='games/wordy/check_status', renderer='templates/wordy_game.pt', permission='view')
 def check_status(request):

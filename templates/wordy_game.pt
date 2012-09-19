@@ -111,13 +111,18 @@
         <script type="text/javascript">
             var the_board = ${the_board};
             var player_letters = ${player_letters};
+            
+            var wordy_move_route = "${request.route_url("games/wordy/make_move", game_id=the_game.id)}";
         </script>
         <script type="text/javascript" src="${request.static_url('dashboard:static/games/wordy/wordy.js')}"></script>
         
         <div id="wordy_frame">
             <div style="float:right; width:340px;">
-                <div class="button" style="float:left;" id="reset_button">Reset</div>
-                <div class="button" style="float:left;" id="recall_button">Recall</div>
+                <div class="button" id="reset_button">Reset</div>
+                <div class="button" id="recall_button">Recall</div>
+                
+                <br /><br />
+                <div class="button" id="submit_button">Submit</div>
             </div>
             <div id="wordy_board">
                 &nbsp;
@@ -126,10 +131,9 @@
                 &nbsp;
             </div>
         </div>
-        <form action="request.route('games/wordy/make_move')" method="post" accept-charset="utf-8" id="move_maker">
-            <input type="hhidden" name="letter${i}" id="letter${i}" value="${i}" tal:repeat="i range(7)" />
-            
-            <input type="submit" value="Continue &rarr;" />
+        <form action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8" id="move_maker_form">
+            <input type="hhidden" name="letter${i}" id="letter${i}" value="" tal:repeat="i range(7)" />
+            <span id="move_result"></span>
         </form>
     </div>
 </div>
