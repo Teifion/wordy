@@ -1,0 +1,56 @@
+<div metal:use-macro="layout">
+    <div metal:fill-slot="content">
+        
+        <script type="text/javascript">
+            function lookup_user ()
+            {
+                var usernamme = $('#opponent_name');
+                
+                if  (username != -1)
+                {
+                    
+                }
+                else
+                {
+                    
+                }
+            }
+            
+            function check_username ()
+            {
+            
+                var usernamme = $('#opponent_name');
+                
+                if  (username != "-1")
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            
+            $(function() {
+                $("#opponent_name").focus();
+            });
+        </script>
+        
+        <form action="${request.route_url('games/wordy/new_game')}" method="post" accept-charset="utf-8" onsubmit="return check_username();">
+            <table border="0" cellspacing="0" cellpadding="5">
+                <tr id="select_player">
+                    <td>Select your opponent (use usernames, e.g. jordant)</td>
+                    <td><input type="text" name="opponent_name" id="opponent_name" value="" onchange="lookup_user();"/></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <input type="submit" name="form.submitted" class="button" value="Start game" />
+                    </td>
+                </tr>
+            </table>
+            
+            
+        </form>
+        
+    </div>
+</div>

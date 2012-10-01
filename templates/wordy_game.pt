@@ -113,8 +113,195 @@
             var player_letters = ${player_letters};
             
             var wordy_move_route = "${request.route_url("games/wordy/make_move", game_id=the_game.id)}";
+            
+            var draw_board, drop_tile_on_board, drop_tile_on_tray, game_init, recall;
+
+            var letter_holders;
+            letter_holders = [];
+
+            // Document.ready
+            $(function() {
+                $.ajaxSetup({cache: false});
+                
+                return game_init();
+            });
+
+            function game_init ()
+            {
+                $('#reset_button').click(function() {
+                    draw_board();
+                });
+                
+                $('#recall_button').click(function() {
+                    recall();
+                });
+                
+                $('#submit_button').click(function() {
+                    submit_letters();
+                });
+                
+                draw_board();
+            }
+
+            function draw_board ()
+            {
+                var board_row, l, letter, tile_type, tray_wrapper, wordy_board;
+                
+                $('#wordy_board').empty();
+                $('#tray_wrapper').empty();
+                
+                wordy_board = "<table cellspacing='0' cellpadding='0'>";
+                for (var x = 0; x <= 14; x += 1)
+                {
+                    wordy_board += "<tr>";
+                    
+                    for (var y = 0; y <= 14; y += 1)
+                    {
+                        letter = the_board[x][y];
+                        if (letter !== " ")
+                        {
+                            tile_type = "l" + letter;
+                        } else {
+                            tile_type = "letter";
+                        }
+                        
+                        wordy_board += "<td><div id='" + y + "_" + x + "' class='" + tile_type + "'>&nbsp;</div></td>";
+                    }
+                    wordy_board += "</tr>";
+                }
+                
+                wordy_board += "</table>";
+                
+                
+                $('#wordy_board').html(wordy_board);
+                build_tray();
+                
+                // Reset the form
+                for (var i = 0; i <= 7; i++)
+                {
+                    $('#letter' + i).val("");
+                }
+                
+                $('.letter_tray').droppable({
+                    "drop": function(event, ui) {
+                        return drop_tile_on_tray(event, ui);
+                    },
+                    "accept": ".draggable_letter",
+                    "activeClass": "custom-state-active"
+                });
+                
+                $('.letter').droppable({
+                    "drop": function(event, ui) {
+                        $(this).droppable('option', 'accept', ui.draggable);
+                        return drop_tile_on_board(event, ui);
+                    },
+                    out: function(event, ui){
+                        $(this).droppable('option', 'accept', '.draggable_letter');
+                    },
+                    "accept": ".draggable_letter",
+                    "activeClass": "custom-state-active",
+                    "tolerance": "fit"
+                });
+            }
+
+            function build_tray ()
+            {
+                var tray_wrapper = "";
+                for (var i = 0; i < player_letters.length; i++)
+                {
+                    l = player_letters[i];
+                    tray_wrapper += "<div class='letter_tray'>";
+                    tray_wrapper += "<div id='player_letter_" + i + "' class='draggable_letter'><div class='l" + l + "'>&nbsp;</div></div>";
+                    tray_wrapper += "</div>";
+                }
+                $('#tray_wrapper').html(tray_wrapper);
+                
+                $('.draggable_letter').draggable({
+                    "cancel": "a.ui-icon",
+                    "revert": "invalid",
+                    "containment": "#wordy_frame",
+                    "cursor": "move",
+                    "tolerance": "fit",
+                    "snap": '.letter',
+                    "snapMode": 'inner',
+                    "snapTolerance": 30
+                });
+            }
+
+            function drop_tile_on_board (event, ui)
+            {
+                // This is the item we're dropping it on
+                var t = event.target;
+                
+                // This is the item being dropped
+                var full_id = ui.draggable[0].id;
+                var letter_id = full_id[full_id.length-1];
+                
+                // We update the form
+                $('#letter' + letter_id).val(letter_id + ':' + t.id);
+            }
+
+            function drop_tile_on_tray (event, ui)
+            {
+                // This is the item being dropped
+                var full_id = ui.draggable[0].id;
+                var letter_id = full_id[full_id.length-1];
+                
+                // We update the form
+                $('#letter' + letter_id).val("");
+            }
+
+            function recall ()
+            {
+                for (var i = 0; i < 7; i++)
+                {
+                    // Drop it from the DOM
+                    $("#player_letter_" + i).remove();
+                    $("#letter" + i).val("");
+                }
+                build_tray();
+            }
+
+            function submit_letters ()
+            {
+                var data = {};
+                for (var i = 0; i < 7; i++)
+                {
+                    data[i] = $("#letter" + i).val();
+                }
+                
+                $("#move_result").load(wordy_move_route, data, submit_letters_callback);
+                
+                // var response = "";
+                // var result = $.load(
+                //     wordy_move_route,
+                //     data,
+                //     function (responseText) {
+                //         response = responseText;
+                //     },
+                //     "text"
+                // );
+                
+                // console.log(result);
+                // console.log(result.responseText);
+            }
+
+            function submit_letters_callback (responseText)
+            {
+                if (responseText == "refresh")
+                {
+                    window.location.reload();
+                }
+                else if (responseText.substr(0,8) == "failure:")
+                {
+                    // alert("Match");
+                }
+                else
+                {
+                    alert("Error!\nUnexpected response of \"" + responseText + "\"");
+                }
+            }
         </script>
-        <script type="text/javascript" src="${request.static_url('dashboard:static/games/wordy/wordy.js')}"></script>
         
         <div id="wordy_frame">
             <div style="float:right; width:340px;">

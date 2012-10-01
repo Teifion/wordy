@@ -1,7 +1,7 @@
 <div metal:use-macro="layout">
     <div metal:fill-slot="content">
         
-        <a href="${request.route_url}" class="inbutton">New game</a>
+        <a href="${request.route_url('games/wordy/new_game')}" class="inbutton">New game</a>
         
         <div style="border:1px solid #000;" tal:repeat="the_game game_list">
             Turn: ${the_game.turn}<br />

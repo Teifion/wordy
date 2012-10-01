@@ -4,6 +4,10 @@ from pyramid.view import (
     view_config,
 )
 
+from pyramid.httpexceptions import (
+    HTTPFound,
+)
+
 from pyramid.renderers import get_renderer
 from sqlalchemy import or_
 
@@ -114,12 +118,43 @@ def view_game(request):
     the_board = wordy_functions.string_to_board(the_game.board.lower())
     
     return dict(
-        title        = "wordy",
+        title        = "Wordy - Playing X",
         layout       = layout,
         the_board    = the_board,
         player_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
         the_game = the_game,
     )
+
+@view_config(route_name='games/wordy/new_game', renderer='templates/new_game.pt', permission='view')
+def new_game(request):
+    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    
+    if "form.submitted" in request.params:
+        opponent_name = request.params['opponent_name'].strip().upper()
+        
+        opponent_id = DBSession.query(User.id).filter(User.name == opponent_name).one()[0]
+        
+        new_game = WordyGame()
+        new_game.player1 = request.user.id
+        new_game.player2 = opponent_id
+        
+        # Setup the initial tiles
+        the_bag = wordy_functions.default_bag
+        
+        new_game.player1_tiles, the_bag = wordy_functions.pick_from_bag(the_bag, letters=7)
+        new_game.player2_tiles, the_bag = wordy_functions.pick_from_bag(the_bag, letters=7)
+        new_game.game_bag = str(the_bag)
+        
+        DBSession.add(new_game)
+        DBSession.flush()
+        
+        return HTTPFound(location = request.route_url('games/wordy/game', game_id=new_game.id))
+    
+    return dict(
+        title        = "Wordy - New game",
+        layout       = layout,
+    )
+
 
 @view_config(route_name='games/wordy/make_move', renderer='string', permission='view')
 def make_move(request):
