@@ -89,13 +89,14 @@
         
         #tray_wrapper
         {
+            padding:10px 0;
             height: 50px;
             border:1px solid #000;
         }
         
         .letter_tray
         {
-            border: 1px solid #F00;
+            border: 0px solid #F00;
             width: 50px;
             height: 50px;
             display: inline-block;
@@ -128,12 +129,8 @@
 
             function game_init ()
             {
-                $('#reset_button').click(function() {
-                    draw_board();
-                });
-                
                 $('#recall_button').click(function() {
-                    recall();
+                    draw_board();
                 });
                 
                 $('#submit_button').click(function() {
@@ -238,7 +235,7 @@
                 var letter_id = full_id[full_id.length-1];
                 
                 // We update the form
-                $('#letter' + letter_id).val(letter_id + ':' + t.id);
+                $('#letter' + letter_id).val(letter_id + '_' + t.id);
             }
 
             function drop_tile_on_tray (event, ui)
@@ -305,7 +302,6 @@
         
         <div id="wordy_frame">
             <div style="float:right; width:340px;">
-                <div class="button" id="reset_button">Reset</div>
                 <div class="button" id="recall_button">Recall</div>
                 
                 <br /><br />

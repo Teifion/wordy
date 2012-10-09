@@ -19,6 +19,7 @@ from ...models import (
 
 from . import wordy_functions
 
+# After installation you should remove this view or block it off in some way
 @view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='view')
 def wordy_init(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
@@ -107,24 +108,6 @@ def wordy_menu(request):
         layout        = layout,
     )
 
-@view_config(route_name='games/wordy/game', renderer='templates/wordy_game.pt', permission='view')
-def view_game(request):
-    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
-    
-    game_id = int(request.matchdict['game_id'])
-    
-    the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
-    
-    the_board = wordy_functions.string_to_board(the_game.board.lower())
-    
-    return dict(
-        title        = "Wordy - Playing X",
-        layout       = layout,
-        the_board    = the_board,
-        player_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-        the_game = the_game,
-    )
-
 @view_config(route_name='games/wordy/new_game', renderer='templates/new_game.pt', permission='view')
 def new_game(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
@@ -141,8 +124,8 @@ def new_game(request):
         # Setup the initial tiles
         the_bag = wordy_functions.default_bag
         
-        new_game.player1_tiles, the_bag = wordy_functions.pick_from_bag(the_bag, letters=7)
-        new_game.player2_tiles, the_bag = wordy_functions.pick_from_bag(the_bag, letters=7)
+        new_game.player1_tiles, the_bag = wordy_functions.pick_from_bag(the_bag, tiles=7)
+        new_game.player2_tiles, the_bag = wordy_functions.pick_from_bag(the_bag, tiles=7)
         new_game.game_bag = str(the_bag)
         
         DBSession.add(new_game)
@@ -155,17 +138,69 @@ def new_game(request):
         layout       = layout,
     )
 
+@view_config(route_name='games/wordy/game', renderer='templates/wordy_game.pt', permission='view')
+def view_game(request):
+    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    
+    game_id = int(request.matchdict['game_id'])
+    the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
+    
+    if the_game.player1 == request.user.id:
+        letters = the_game.player1_tiles
+        other_player = DBSession.query(User).filter(User.id == the_game.player2).one()
+    elif the_game.player2 == request.user.id:
+        letters = the_game.player2_tiles
+        other_player = DBSession.query(User).filter(User.id == the_game.player1).one()
+    elif the_game.player3 == request.user.id: letters = the_game.player3_tiles
+    elif the_game.player4 == request.user.id: letters = the_game.player4_tiles
+    else:
+        raise Exception("You are not a player")
+    
+    the_board = wordy_functions.string_to_board(the_game.board.lower())
+    
+    return dict(
+        title        = "Wordy - Playing {}".format(other_player.actual_name),
+        layout       = layout,
+        the_board    = the_board,
+        player_letters = list(letters.lower()),
+        the_game = the_game,
+    )
 
 @view_config(route_name='games/wordy/make_move', renderer='string', permission='view')
 def make_move(request):
+    game_id = int(request.matchdict['game_id'])
+    the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
+    
+    if the_game.player1 == request.user.id:
+        player_letters = the_game.player1_tiles
+    elif the_game.player2 == request.user.id:
+        player_letters = the_game.player2_tiles
+    elif the_game.player3 == request.user.id:
+        player_letters = the_game.player3_tiles
+    elif the_game.player4 == request.user.id:
+        player_letters = the_game.player4_tiles
+    
+    new_letters = []
+    
     result = []
-    for k, v in request.params.items():
-        result.append(str((k, v)))
+    for k, tile_info in request.params.items():
+        if tile_info != "":
+            l, x, y = tile_info.split("_")
+            new_letters.append((player_letters[int(l)], int(x), int(y)))
     
-    result = "refresh"
-    result = "failure:ADDER is not a valid word"
+    if new_letters == []:
+        return "failure:You didn't make a move"
     
-    return result
+    try:
+        result = wordy_functions.attempt_move(the_game, new_letters)
+    except Exception as e:
+        result = e.args[0]
+    
+    if result == "success":
+        return "failure:Success"
+    
+    else:
+        return "failure:%s" % result
     
 
 @view_config(route_name='games/wordy/check_status', renderer='templates/wordy_game.pt', permission='view')
