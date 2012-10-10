@@ -268,30 +268,21 @@
                 }
                 
                 $("#move_result").load(wordy_move_route, data, submit_letters_callback);
-                
-                // var response = "";
-                // var result = $.load(
-                //     wordy_move_route,
-                //     data,
-                //     function (responseText) {
-                //         response = responseText;
-                //     },
-                //     "text"
-                // );
-                
-                // console.log(result);
-                // console.log(result.responseText);
             }
 
             function submit_letters_callback (responseText)
             {
-                if (responseText == "refresh")
+                if (responseText.substr(0,8) == "success:")
                 {
-                    window.location.reload();
+                    // window.location.reload();
                 }
                 else if (responseText.substr(0,8) == "failure:")
                 {
                     // alert("Match");
+                }
+                else if (responseText == "")
+                {
+                    alert("The server does not appear to be responding. Try again in a few minutes.");
                 }
                 else
                 {

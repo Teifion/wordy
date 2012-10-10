@@ -19,6 +19,16 @@ from ...models import (
 
 from . import wordy_functions
 
+"""
+config.add_route('games/wordy', '/games/wordy')
+config.add_route('games/wordy/init', '/games/wordy/init')
+config.add_route('games/wordy/game', '/games/wordy/game/{game_id}')
+config.add_route('games/wordy/new_game', '/games/wordy/new_game')
+config.add_route('games/wordy/make_move', '/games/wordy/make_move/{game_id}')
+config.add_route('games/wordy/check_status', '/games/wordy/check_status/{game_id}')
+config.add_route('games/wordy/get_updated_board', '/games/wordy/get_updated_board/{game_id}')
+"""
+
 # After installation you should remove this view or block it off in some way
 @view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='view')
 def wordy_init(request):
@@ -192,15 +202,11 @@ def make_move(request):
         return "failure:You didn't make a move"
     
     try:
-        result = wordy_functions.attempt_move(the_game, new_letters)
+        result = "success:%s" % wordy_functions.perform_move(the_game, request.user.id, new_letters)
     except Exception as e:
-        result = e.args[0]
+        result = "failure:%s" % e.args[0]
     
-    if result == "success":
-        return "failure:Success"
-    
-    else:
-        return "failure:%s" % result
+    return result
     
 
 @view_config(route_name='games/wordy/check_status', renderer='templates/wordy_game.pt', permission='view')

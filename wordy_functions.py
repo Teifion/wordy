@@ -1,5 +1,51 @@
 import random
 
+# http://en.wikipedia.org/w/index.php?title=File:Blank_Scrabble_board_with_coordinates.svg&page=1
+# Double/Triple word scores
+dws = (
+    (1,1),              (13,1),
+      (2,2),          (12,2),
+        (3,3),      (11,3),
+          (4,4),  (10,4),
+    
+          (4,10), (10,10),
+        (3,11),     (11,11),
+      (2,12),         (12,12),
+    (1,13),             (13,13),
+)
+tws = (
+    (0,0),  (7,0),  (14,0),
+    (0,8),          (14,8),
+    (0,14), (7,14), (14,14)
+)
+
+# Double/Triple letter scores
+dls = (
+          (3,0),                  (11,0),
+                  (6,2),  (8,2),
+    (0,3),            (7,3),              (14,3),
+    
+        (2,6),    (6,6),  (8,6),    (12,6),
+          (3,7),                  (11,7),
+        (2,8),    (6,8),  (8,8),    (12,8),
+        
+    (0,11),           (7,11),             (14,11),
+                  (6,12), (8,12),
+          (3,14),                  (11,14),
+)
+tls = (
+            (5,1),      (9,1),
+    
+    (1,5),  (5,5),      (9,5),   (12,5),
+    
+    (1,9),  (5,9),      (9,9),   (12,9),
+    
+            (5,13),     (9,13),
+)
+
+# ABCDEFGHIJKLMNO
+# 0123456789ABCDE
+
 default_bag = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ****"
 
 dummy_board = """
@@ -60,6 +106,7 @@ letter_values = {
     "Y": 4,
     "Z": 10,
     "*": 0,
+    " ": 0,
 }
 
 def _pp_board(the_board):
@@ -83,6 +130,9 @@ def string_to_board(board_string):
     
     return the_board
 
+def board_to_string(board_lists):
+    return "".join(["".join(b) for b in board_lists])
+
 def pick_from_bag(the_bag, tiles=7):
     if type(the_bag) == str:
         new_bag = list(the_bag)
@@ -100,10 +150,25 @@ def pick_from_bag(the_bag, tiles=7):
 def player_turn(turn_number, players = 2):
     return 1 + (turn_number % players)
 
-def attempt_move(the_game, new_letters):
+def perform_move(the_game, player_id, new_letters):
+    return attempt_move(the_game, player_id, new_letters, perform=True)
+
+def attempt_move(the_game, player_id, new_letters, perform=False):
+    # Whose turn is it anyways?
+    p_turn = player_turn(the_game.turn)
+    not_your_turn = False
+    if p_turn == 1 and the_game.player1 != player_id: not_your_turn = True
+    if p_turn == 2 and the_game.player2 != player_id: not_your_turn = True
+    if p_turn == 3 and the_game.player3 != player_id: not_your_turn = True
+    if p_turn == 4 and the_game.player4 != player_id: not_your_turn = True
+    
+    if not_your_turn:
+        raise Exception("It is not your turn yet")
+    
+    # Get the board as a string
     b = string_to_board(the_game.board)
     
-    # First we want to make sure all the letters can be placed in these locations
+    # We want to make sure all the letters can be placed in these locations
     xs, ys = set(), set()
     for l, x, y in new_letters:
         if x < 0 or x > 14 or y < 0 or y > 14:
@@ -144,7 +209,9 @@ def attempt_move(the_game, new_letters):
     # Now we want to find all the words to check in the datbase
     words = []
     
+    """
     # start with cross scans, we can scan all words on the board but if we limit searches
+    # It's also an issue when we want to calculate score
     # it reduces complexity of database queries
     for x in xs:
         current_word = []
@@ -178,11 +245,95 @@ def attempt_move(the_game, new_letters):
         
         if len(current_word) > 1:
             words.append("".join(current_word))
+    """
     
-    print("\n\n")
-    print(xs)
-    print(ys)
-    print(words)
+    points = 0
+    words = []
+    covered = set()
+    for l, x, y in new_letters:
+        if (x,y) in covered: continue
+        
+        # Go left until we hit an empty space or edge of the board
+        temp_x = x
+        temp_l = l
+        while temp_x >= 0 and temp_l != " ":
+            temp_l = b[y][temp_x]
+            temp_x -= 1
+        
+        temp_x += 1
+        if temp_l == " ": temp_x += 1
+        temp_l = ""
+        
+        # Read right until the same, this is one word
+        new_word = []
+        word_points = 0
+        word_multiplier = 1
+        while temp_x <= 15 and temp_l != " ":
+            covered.add((temp_x, y))
+            temp_l = b[y][temp_x]
+            new_word.append(temp_l)
+            
+            letter_multiplier = 1
+            
+            # If it's fresh we check for special tiles
+            if (temp_l, temp_x, y) in new_letters:
+                if (temp_x, y) in dws: word_multiplier *= 2
+                if (temp_x, y) in tws: word_multiplier *= 3
+                
+                if (temp_x, y) in dls: letter_multiplier = 2
+                if (temp_x, y) in tls: letter_multiplier = 3
+            
+            word_points += (letter_values[temp_l] * letter_multiplier)
+            temp_x += 1
+        
+        new_word = "".join(new_word).strip()
+        if len(new_word) > 1:
+            points += (word_points * word_multiplier)
+            words.append(new_word)
+    
+    # Repeat for Y
+    # We don't put them in the same loop as it's not easy to track which tiles we've already covered
+    covered = set()
+    for l, x, y in new_letters:
+        if (x,y) in covered: continue
+        
+        # Go left until we hit an empty space or edge of the board
+        temp_y = y
+        temp_l = l
+        while temp_y >= 0 and temp_l != " ":
+            temp_l = b[temp_y][x]
+            temp_y -= 1
+        
+        temp_y += 1
+        if temp_l == " ": temp_y += 1
+        temp_l = ""
+        
+        # Read right until the same, this is one word
+        new_word = []
+        word_points = 0
+        word_multiplier = 1
+        while temp_y <= 15 and temp_l != " ":
+            covered.add((x, temp_y))
+            temp_l = b[temp_y][x]
+            new_word.append(temp_l)
+            
+            letter_multiplier = 1
+            
+            # If it's fresh we check for special tiles
+            if (temp_l, x, temp_y) in new_letters:
+                if (x, temp_y) in dws: word_multiplier *= 2
+                if (x, temp_y) in tws: word_multiplier *= 3
+                
+                if (x, temp_y) in dls: letter_multiplier = 2
+                if (x, temp_y) in tls: letter_multiplier = 3
+            
+            word_points += (letter_values[temp_l] * letter_multiplier)
+            temp_y += 1
+        
+        new_word = "".join(new_word).strip()
+        if len(new_word) > 1:
+            points += (word_points * word_multiplier)
+            words.append(new_word)
     
     # Get a list of these words from the database
     # any word not in the list we get back is an invalid word
@@ -199,10 +350,25 @@ def attempt_move(the_game, new_letters):
         else:
             raise KeyError("{} and {} are not valid words".format(", ".join(invalid[:-1]), invalid[-1]))
     
-    # _pp_board(b)
+    # At this stage it's been a success, we need to update the board and player tiles
+    if perform:
+        new_tiles, new_bag = pick_from_bag(the_game.game_bag, tiles=len(new_letters))
+        
+        # the_game.board = board_to_string(b)
+        # the_game.turn += 1
+        # the_game.game_bag = new_bag
+        # if p_turn == 1: the_game.player1_tiles += new_tiles
+        # if p_turn == 2: the_game.player2_tiles += new_tiles
+        # if p_turn == 3: the_game.player3_tiles += new_tiles
+        # if p_turn == 4: the_game.player4_tiles += new_tiles
+        
+        update_game(the_game)
     
-    return "Success"
-
+    # They may just want to know how many points this will score
+    if len(new_letters) == 7:
+        points += 50
+    
+    return "{} points".format(points)
 
 # This is a function you might need to alter to get at the words from the database
 from ...models import (
@@ -212,3 +378,8 @@ from ...models import (
 
 def get_words_from_db(words):
     return [w[0] for w in DBSession.query(WordyWord.word).filter(WordyWord.word.in_(words)).limit(len(words))]
+
+def update_game(the_game):
+    pass
+    # SQLAlchemy does this automatically for me but it's
+    # here to make a hook easier for anything else
