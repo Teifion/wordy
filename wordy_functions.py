@@ -157,10 +157,18 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     # Whose turn is it anyways?
     p_turn = player_turn(the_game.turn)
     not_your_turn = False
-    if p_turn == 1 and the_game.player1 != player_id: not_your_turn = True
-    if p_turn == 2 and the_game.player2 != player_id: not_your_turn = True
-    if p_turn == 3 and the_game.player3 != player_id: not_your_turn = True
-    if p_turn == 4 and the_game.player4 != player_id: not_your_turn = True
+    if p_turn == 1:
+        player_letters = the_game.player1_tiles
+        if the_game.player1 != player_id: not_your_turn = True
+    elif p_turn == 2:
+        player_letters = the_game.player2_tiles
+        if the_game.player2 != player_id: not_your_turn = True
+    elif p_turn == 3:
+        player_letters = the_game.player3_tiles
+        if the_game.player3 != player_id: not_your_turn = True
+    elif p_turn == 4:
+        player_letters = the_game.player4_tiles
+        if the_game.player4 != player_id: not_your_turn = True
     
     if not_your_turn:
         raise Exception("It is not your turn yet")
@@ -207,46 +215,6 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         raise KeyError("The centre tile is not covered")
     
     # Now we want to find all the words to check in the datbase
-    words = []
-    
-    """
-    # start with cross scans, we can scan all words on the board but if we limit searches
-    # It's also an issue when we want to calculate score
-    # it reduces complexity of database queries
-    for x in xs:
-        current_word = []
-        
-        for y in range(0,15):
-            l = b[y][x]
-            if l == " ":
-                if current_word != []:
-                    if len(current_word) > 1:
-                        words.append("".join(current_word))
-                    current_word = []
-            else:
-                current_word.append(l)
-            
-        if len(current_word) > 1:
-            words.append("".join(current_word))
-                
-    # Now vertical scans
-    for y in ys:
-        current_word = []
-        
-        for x in range(0,15):
-            l = b[y][x]
-            if l == " ":
-                if current_word != []:
-                    if len(current_word) > 1:
-                        words.append("".join(current_word))
-                    current_word = []
-            else:
-                current_word.append(l)
-        
-        if len(current_word) > 1:
-            words.append("".join(current_word))
-    """
-    
     points = 0
     words = []
     covered = set()
@@ -268,7 +236,7 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         new_word = []
         word_points = 0
         word_multiplier = 1
-        while temp_x <= 15 and temp_l != " ":
+        while temp_x <= 14 and temp_l != " ":
             covered.add((temp_x, y))
             temp_l = b[y][temp_x]
             new_word.append(temp_l)
@@ -312,7 +280,7 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         new_word = []
         word_points = 0
         word_multiplier = 1
-        while temp_y <= 15 and temp_l != " ":
+        while temp_y <= 14 and temp_l != " ":
             covered.add((x, temp_y))
             temp_l = b[temp_y][x]
             new_word.append(temp_l)
@@ -335,6 +303,10 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
             points += (word_points * word_multiplier)
             words.append(new_word)
     
+    # If we're not performing then we will just return the points and assume they are valid words
+    if not perform:
+        return points
+    
     # Get a list of these words from the database
     # any word not in the list we get back is an invalid word
     db_words = get_words_from_db(words)
@@ -351,18 +323,43 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
             raise KeyError("{} and {} are not valid words".format(", ".join(invalid[:-1]), invalid[-1]))
     
     # At this stage it's been a success, we need to update the board and player tiles
-    if perform:
-        new_tiles, new_bag = pick_from_bag(the_game.game_bag, tiles=len(new_letters))
-        
-        # the_game.board = board_to_string(b)
-        # the_game.turn += 1
-        # the_game.game_bag = new_bag
-        # if p_turn == 1: the_game.player1_tiles += new_tiles
-        # if p_turn == 2: the_game.player2_tiles += new_tiles
-        # if p_turn == 3: the_game.player3_tiles += new_tiles
-        # if p_turn == 4: the_game.player4_tiles += new_tiles
-        
-        update_game(the_game)
+    
+    new_tiles, new_bag = pick_from_bag(the_game.game_bag, tiles=len(new_letters))
+    
+    for l, x, y in new_letters:
+        player_letters = player_letters.replace(l, "", 1)
+    
+    the_game.board = board_to_string(b)
+    the_game.turn += 1
+    the_game.game_bag = new_bag
+    
+    if p_turn == 1:
+        the_game.player1_tiles = player_letters + new_tiles
+        player_name = get_player_name(the_game.player1)
+    elif p_turn == 2:
+        the_game.player2_tiles = player_letters + new_tiles
+        player_name = get_player_name(the_game.player2)
+    elif p_turn == 3:
+        the_game.player3_tiles = player_letters + new_tiles
+        player_name = get_player_name(the_game.player3)
+    elif p_turn == 4:
+        the_game.player4_tiles = player_letters + new_tiles
+        player_name = get_player_name(the_game.player4)
+    
+    # Build a description of the words
+    words = [w.title() for w in words]
+    if len(words) == 1:
+        word_string = words[0]
+    else:
+        word_string = "{} and {}".format(", ".join(words[:-1]), words[-1])
+    
+    the_game.turn_log += "\n{player_name}: {the_word} for {points} points".format(
+        player_name = player_name,
+        the_word = word_string,
+        points = points,
+    )
+    the_game.turn_log = the_game.turn_log.strip()
+    update_game(the_game)
     
     # They may just want to know how many points this will score
     if len(new_letters) == 7:
@@ -373,11 +370,15 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
 # This is a function you might need to alter to get at the words from the database
 from ...models import (
     DBSession,
+    User,
     WordyWord,
 )
 
 def get_words_from_db(words):
     return [w[0] for w in DBSession.query(WordyWord.word).filter(WordyWord.word.in_(words)).limit(len(words))]
+
+def get_player_name(player_id):
+    return DBSession.query(User.actual_name).filter(User.id == player_id).one()[0]
 
 def update_game(the_game):
     pass

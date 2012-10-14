@@ -168,11 +168,16 @@ def view_game(request):
     
     the_board = wordy_functions.string_to_board(the_game.board.lower())
     
+    turn_log = []
+    for l in the_game.turn_log.split("\n"):
+        turn_log.append(l)
+    
     return dict(
         title        = "Wordy - Playing {}".format(other_player.actual_name),
         layout       = layout,
         the_board    = the_board,
         player_letters = list(letters.lower()),
+        turn_log = "<br />".join(turn_log),
         the_game = the_game,
     )
 
@@ -207,7 +212,38 @@ def make_move(request):
         result = "failure:%s" % e.args[0]
     
     return result
+
+@view_config(route_name='games/wordy/test_move', renderer='string', permission='view')
+def test_move(request):
+    game_id = int(request.matchdict['game_id'])
+    the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
     
+    if the_game.player1 == request.user.id:
+        player_letters = the_game.player1_tiles
+    elif the_game.player2 == request.user.id:
+        player_letters = the_game.player2_tiles
+    elif the_game.player3 == request.user.id:
+        player_letters = the_game.player3_tiles
+    elif the_game.player4 == request.user.id:
+        player_letters = the_game.player4_tiles
+    
+    new_letters = []
+    
+    result = []
+    for k, tile_info in request.params.items():
+        if tile_info != "":
+            l, x, y = tile_info.split("_")
+            new_letters.append((player_letters[int(l)], int(x), int(y)))
+    
+    if new_letters == []:
+        return "failure:You didn't make a move"
+    
+    try:
+        result = wordy_functions.attempt_move(the_game, request.user.id, new_letters)
+    except Exception:
+        result = 0
+    
+    return result
 
 @view_config(route_name='games/wordy/check_status', renderer='templates/wordy_game.pt', permission='view')
 def check_status(request):

@@ -114,6 +114,7 @@
             var player_letters = ${player_letters};
             
             var wordy_move_route = "${request.route_url("games/wordy/make_move", game_id=the_game.id)}";
+            var wordy_test_route = "${request.route_url("games/wordy/test_move", game_id=the_game.id)}";
             
             var draw_board, drop_tile_on_board, drop_tile_on_tray, game_init, recall;
 
@@ -236,8 +237,25 @@
                 
                 // We update the form
                 $('#letter' + letter_id).val(letter_id + '_' + t.id);
+                
+                
+                /*
+                // This will show how many points you can potentially get for this move, I'm just not sure how best to display the info
+                $("#move_points").position({
+                    of: t,
+                    my: "left top",
+                    at: -50 + " " + -50
+                });
+                
+                var data = {};
+                for (var i = 0; i < 7; i++)
+                {
+                    data[i] = $("#letter" + i).val();
+                }
+                $("#move_points").load(wordy_test_route, data);
+                */
             }
-
+            
             function drop_tile_on_tray (event, ui)
             {
                 // This is the item being dropped
@@ -274,7 +292,7 @@
             {
                 if (responseText.substr(0,8) == "success:")
                 {
-                    // window.location.reload();
+                    window.location.reload();
                 }
                 else if (responseText.substr(0,8) == "failure:")
                 {
@@ -286,7 +304,8 @@
                 }
                 else
                 {
-                    alert("Error!\nUnexpected response of \"" + responseText + "\"");
+                    alert("Error!\nUnexpected response from server.");
+                    // alert("Error!\nUnexpected response of \"" + responseText + "\"");
                 }
             }
         </script>
@@ -294,9 +313,12 @@
         <div id="wordy_frame">
             <div style="float:right; width:340px;">
                 <div class="button" id="recall_button">Recall</div>
-                
                 <br /><br />
+                
                 <div class="button" id="submit_button">Submit</div>
+                <br /><br />
+                
+                ${structure:turn_log}
             </div>
             <div id="wordy_board">
                 &nbsp;
@@ -306,8 +328,11 @@
             </div>
         </div>
         <form action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8" id="move_maker_form">
-            <input type="hhidden" name="letter${i}" id="letter${i}" value="" tal:repeat="i range(7)" />
+            <input type="hidden" name="letter${i}" id="letter${i}" value="" tal:repeat="i range(7)" />
             <span id="move_result"></span>
         </form>
+        <!--
+        <div style="width:20px;height:20px;color:#FFF;background-color:#000;text-align:center;" id="move_points">30</div>
+        -->
     </div>
 </div>
