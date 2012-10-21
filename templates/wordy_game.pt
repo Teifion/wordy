@@ -108,6 +108,11 @@
         }
     </style>
     
+    <div metal:fill-slot="extra_buttons" style="display:inline-block;">
+        <a class="inbutton" href="${request.route_url('games/wordy')}">Back to Menu</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </div>
+    
     <div metal:fill-slot="content">
         <script type="text/javascript">
             var the_board = ${the_board};
@@ -297,6 +302,8 @@
                 else if (responseText.substr(0,8) == "failure:")
                 {
                     // alert("Match");
+                    $('#panel_response').html(responseText.replace("failure:", ""));
+                    $('#panel_response').dialog({modal:true,minWidth:500,buttons:{Ok: function() {$(this).dialog('close');}}});
                 }
                 else if (responseText == "")
                 {
@@ -308,10 +315,31 @@
                     // alert("Error!\nUnexpected response of \"" + responseText + "\"");
                 }
             }
+            
+            function check_turn()
+            {
+                var my_turn = $('#my_turn').html();
+                
+                if (my_turn == "True")
+                {
+                    location.reload();
+                }
+            }
         </script>
+        
+        <div id="panel_response" style="display:none;" title="Failure">
+            
+        </div>
         
         <div id="wordy_frame">
             <div style="float:right; width:340px;">
+                <div tal:condition="your_turn == False">The game will automatically check for new moves every minute and then allow you to make a move.
+                    <script type="text/javascript">
+                        // Check every 30 seconds
+                        var page_check = setInterval("$('#my_turn').load('${request.route_url('games/wordy/check_status', game_id=the_game.id)}', {}, check_turn);", 1000*60);
+                    </script>
+                </div>
+                
                 <div class="button" id="recall_button">Recall</div>
                 <br /><br />
                 
@@ -319,6 +347,13 @@
                 <br /><br />
                 
                 ${structure:turn_log}
+                
+                <br /><br />
+                <strong>Current scores</strong>
+                <div tal:repeat="pname scores">
+                    ${pname}: ${scores[pname]}
+                </div>
+                
             </div>
             <div id="wordy_board">
                 &nbsp;
@@ -329,10 +364,14 @@
         </div>
         <form action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8" id="move_maker_form">
             <input type="hidden" name="letter${i}" id="letter${i}" value="" tal:repeat="i range(7)" />
-            <span id="move_result"></span>
+            <span id="move_result" style="display:none;"></span>
         </form>
         <!--
         <div style="width:20px;height:20px;color:#FFF;background-color:#000;text-align:center;" id="move_points">30</div>
         -->
+        
+        <div id="my_turn" style="display:none;">
+            &nbsp;
+        </div>
     </div>
 </div>

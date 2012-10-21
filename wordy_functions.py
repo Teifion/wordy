@@ -1,4 +1,6 @@
 import random
+import re
+from collections import defaultdict
 
 # http://en.wikipedia.org/w/index.php?title=File:Blank_Scrabble_board_with_coordinates.svg&page=1
 # Double/Triple word scores
@@ -47,6 +49,7 @@ tls = (
 # 0123456789ABCDE
 
 default_bag = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ****"
+default_bag = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ"
 
 dummy_board = """
 ___Q___G_______
@@ -384,3 +387,17 @@ def update_game(the_game):
     pass
     # SQLAlchemy does this automatically for me but it's
     # here to make a hook easier for anything else
+
+line_points = re.compile(r"^(.+): [a-zA-Z]* for ([0-9]+) points$")
+# Leigh Bevan: Leg for 4 points
+def tally_scores(the_text):
+    results = defaultdict(int)
+    
+    for l in the_text.split("\n"):
+        r = line_points.search(l.strip())
+        
+        if r != None:
+            name, points = r.groups()
+            results[name] += int(points)
+    
+    return results

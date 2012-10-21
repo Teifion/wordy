@@ -30,7 +30,7 @@ config.add_route('games/wordy/get_updated_board', '/games/wordy/get_updated_boar
 """
 
 # After installation you should remove this view or block it off in some way
-@view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='view')
+@view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='code')
 def wordy_init(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
@@ -83,7 +83,7 @@ def wordy_init(request):
         content = content,
     )
 
-@view_config(route_name='games/wordy', renderer='templates/wordy_menu.pt', permission='view')
+@view_config(route_name='games/wordy', renderer='templates/wordy_menu.pt', permission='loggedin')
 def wordy_menu(request):
     # I've got my userid tied into the request object via the authentication system
     user_id = request.user.id
@@ -118,7 +118,7 @@ def wordy_menu(request):
         layout        = layout,
     )
 
-@view_config(route_name='games/wordy/new_game', renderer='templates/new_game.pt', permission='view')
+@view_config(route_name='games/wordy/new_game', renderer='templates/new_game.pt', permission='loggedin')
 def new_game(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
@@ -148,25 +148,29 @@ def new_game(request):
         layout       = layout,
     )
 
-@view_config(route_name='games/wordy/game', renderer='templates/wordy_game.pt', permission='view')
+@view_config(route_name='games/wordy/game', renderer='templates/wordy_game.pt', permission='loggedin')
 def view_game(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
     
+    your_turn = False
     if the_game.player1 == request.user.id:
         letters = the_game.player1_tiles
         other_player = DBSession.query(User).filter(User.id == the_game.player2).one()
+        if wordy_functions.player_turn(the_game.turn) == 1: your_turn = True
     elif the_game.player2 == request.user.id:
         letters = the_game.player2_tiles
         other_player = DBSession.query(User).filter(User.id == the_game.player1).one()
+        if wordy_functions.player_turn(the_game.turn) == 2: your_turn = True
     elif the_game.player3 == request.user.id: letters = the_game.player3_tiles
     elif the_game.player4 == request.user.id: letters = the_game.player4_tiles
     else:
         raise Exception("You are not a player")
     
     the_board = wordy_functions.string_to_board(the_game.board.lower())
+    scores = wordy_functions.tally_scores(the_game.turn_log)
     
     turn_log = []
     for l in the_game.turn_log.split("\n"):
@@ -179,9 +183,11 @@ def view_game(request):
         player_letters = list(letters.lower()),
         turn_log = "<br />".join(turn_log),
         the_game = the_game,
+        your_turn = your_turn,
+        scores = scores,
     )
 
-@view_config(route_name='games/wordy/make_move', renderer='string', permission='view')
+@view_config(route_name='games/wordy/make_move', renderer='string', permission='loggedin')
 def make_move(request):
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
@@ -216,7 +222,7 @@ def make_move(request):
 @view_config(route_name='games/wordy/test_move', renderer='string', permission='view')
 def test_move(request):
     game_id = int(request.matchdict['game_id'])
-    the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
+    the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).one()
     
     if the_game.player1 == request.user.id:
         player_letters = the_game.player1_tiles
@@ -245,16 +251,21 @@ def test_move(request):
     
     return result
 
-@view_config(route_name='games/wordy/check_status', renderer='templates/wordy_game.pt', permission='view')
+# Is it my turn yet?
+@view_config(route_name='games/wordy/check_status', renderer='string', permission='loggedin')
 def check_status(request):
-    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    game_id = int(request.matchdict['game_id'])
+    t, p1, p2 = DBSession.query(WordyGame.turn, WordyGame.player1, WordyGame.player2).filter(WordyGame.id == game_id).one()
     
-    return dict(
-        title         = "wordy",
-        layout        = layout,
-    )
+    your_turn = False
+    
+    player_turn = wordy_functions.player_turn(t)
+    if player_turn == 1 and request.user.id == p1: your_turn = True
+    if player_turn == 2 and request.user.id == p2: your_turn = True
+    
+    return str(your_turn)
 
-@view_config(route_name='games/wordy/get_updated_board', renderer='templates/wordy_game.pt', permission='view')
+@view_config(route_name='games/wordy/get_updated_board', renderer='templates/wordy_game.pt', permission='loggedin')
 def get_updated_board(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
