@@ -88,15 +88,34 @@ def wordy_menu(request):
     # I've got my userid tied into the request object via the authentication system
     user_id = request.user.id
     
-    game_list = DBSession.query(WordyGame).filter(or_(
+    game_list = list(DBSession.query(WordyGame).filter(or_(
         WordyGame.player1 == user_id,
         WordyGame.player2 == user_id,
         WordyGame.player3 == user_id,
         WordyGame.player4 == user_id,
-    ))
+    )))
     
     user_ids = []
+    your_turn = []
+    their_turn = []
     for g in game_list:
+        cturn = wordy_functions.player_turn(g.turn)
+        
+        if cturn == 1:
+            if g.player1 == user_id:
+                your_turn.append(g)
+                g.opponent = g.player2
+            else:
+                their_turn.append(g)
+                g.opponent = g.player1
+        elif cturn == 2:
+            if g.player2 == user_id:
+                your_turn.append(g)
+                g.opponent = g.player1
+            else:
+                their_turn.append(g)
+                g.opponent = g.player2
+        
         user_ids.append(g.player1)
         user_ids.append(g.player2)
         
@@ -112,10 +131,12 @@ def wordy_menu(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
     return dict(
-        title         = "Wordy",
-        game_list     = game_list,
-        usernames     = usernames,
-        layout        = layout,
+        title      = "Wordy",
+        game_list  = game_list,
+        usernames  = usernames,
+        layout     = layout,
+        your_turn  = your_turn,
+        their_turn = their_turn,
     )
 
 @view_config(route_name='games/wordy/new_game', renderer='templates/new_game.pt', permission='loggedin')

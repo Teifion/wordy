@@ -38,6 +38,8 @@ class WordyGame(Base):
     
     # The total tiles to pull from the bag for each player
     game_bag = Column(String, nullable=False, default="EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ****")
+    
+    winner = Column(Integer, ForeignKey("users.id"), nullable=True)
 
 class WordyWord(Base):
     __tablename__ = 'wordy_words'

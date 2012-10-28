@@ -104,7 +104,7 @@
         
         #wordy_frame
         {
-            border: 1px solid #F00;
+            border: 1px solid #000;
         }
     </style>
     

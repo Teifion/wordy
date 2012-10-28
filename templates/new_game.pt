@@ -2,23 +2,8 @@
     <div metal:fill-slot="content">
         
         <script type="text/javascript">
-            function lookup_user ()
-            {
-                var usernamme = $('#opponent_name');
-                
-                if  (username != -1)
-                {
-                    
-                }
-                else
-                {
-                    
-                }
-            }
-            
             function check_username ()
             {
-            
                 var usernamme = $('#opponent_name');
                 
                 if  (username != "-1")
@@ -32,19 +17,60 @@
             }
             
             $(function() {
+                // lookup_agent();
                 $("#opponent_name").focus();
             });
+            
+            function lookup_user ()
+            {
+                var agent_name = $('#opponent_name').val();
+                
+                $('#ajax_target').load(
+                    '${request.route_url('ajax/lookup_user')}',
+                    {'username':agent_name},
+                    function () {
+                        if ($('#ajax_target').html() != "-1")
+                        {
+                            $('#select_player_row td').css('background-color','');
+                            $('#player_name_info').html('&nbsp;');
+                            // $('#main_submit').removeAttr('disabled');
+                        }
+                        else if (agent_name == "")
+                        {
+                            $('#select_player_row td').css('background-color','');
+                            $('#player_name_info').html('&nbsp;');
+                            // $('#main_submit').attr('disabled', 'disabled');
+                        }
+                        else
+                        {
+                            $('#select_player_row td').css('background-color','#A00');
+                            $('#player_name_info').html('Cannot find agent by that name');
+                            // $('#main_submit').attr('disabled', 'disabled');
+                        }
+                });
+            }
+            
+            // Ensure we have a valid username before we submit anything
+            function check_username ()
+            {
+                if ($('#ajax_target').html() == "-1")
+                {
+                    return false;
+                }
+                return true;    
+            }
         </script>
         
         <form action="${request.route_url('games/wordy/new_game')}" method="post" accept-charset="utf-8" onsubmit="return check_username();">
             <table border="0" cellspacing="0" cellpadding="5">
-                <tr id="select_player">
+                <tr id="select_player_row">
                     <td>Select your opponent (use usernames, e.g. jordant)</td>
                     <td><input type="text" name="opponent_name" id="opponent_name" value="" onchange="lookup_user();"/></td>
+                    <td id="player_name_info"></td>
                 </tr>
                 <tr>
-                    <td colspan="2">
-                        <input type="submit" name="form.submitted" class="button" value="Start game" />
+                    <td colspan="3">
+                        <input type="submit" id="main_submit" name="form.submitted" class="button" value="Start game" />
                     </td>
                 </tr>
             </table>
