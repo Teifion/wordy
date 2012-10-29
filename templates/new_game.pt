@@ -2,23 +2,22 @@
     <div metal:fill-slot="content">
         
         <script type="text/javascript">
-            function check_username ()
-            {
-                var usernamme = $('#opponent_name');
-                
-                if  (username != "-1")
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            
             $(function() {
                 // lookup_agent();
                 $("#opponent_name").focus();
+                
+                
+                var delay = (function(){
+                    var timer = 0;
+                    return function(callback, ms){
+                        clearTimeout (timer);
+                        timer = setTimeout(callback, ms);
+                    };
+                })();
+                
+                $('#opponent_name').keyup(function() {
+                    delay(lookup_user, 1000);
+                });
             });
             
             function lookup_user ()
