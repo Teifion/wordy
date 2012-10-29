@@ -18,17 +18,6 @@ from ...models import (
 )
 
 from . import wordy_functions
-
-"""
-config.add_route('games/wordy', '/games/wordy')
-config.add_route('games/wordy/init', '/games/wordy/init')
-config.add_route('games/wordy/game', '/games/wordy/game/{game_id}')
-config.add_route('games/wordy/new_game', '/games/wordy/new_game')
-config.add_route('games/wordy/make_move', '/games/wordy/make_move/{game_id}')
-config.add_route('games/wordy/check_status', '/games/wordy/check_status/{game_id}')
-config.add_route('games/wordy/get_updated_board', '/games/wordy/get_updated_board/{game_id}')
-"""
-
 # After installation you should remove this view or block it off in some way
 @view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='code')
 def wordy_init(request):
@@ -212,6 +201,11 @@ def view_game(request):
 def make_move(request):
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
+    
+    # Special "moves"
+    if "forfeit" in request.params:
+        wordy_functions.forfeit_game(the_game, request.user.id)
+        return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
     
     if the_game.player1 == request.user.id:
         player_letters = the_game.player1_tiles

@@ -16,7 +16,6 @@
             height: 50px;
             margin: 0;
             padding: 0;
-            border: 0px solid #000;
         }
         
         .letter,
@@ -55,32 +54,63 @@
             cursor: pointer;
         }
         
-        .la {background-position: -7px -7px;}
-        .lb {background-position: -72px -7px;}
-        .lc {background-position: -137px -7px;}
-        .ld {background-position: -202px -7px;}
-        .le {background-position: -267px -7px;}
-        .lf {background-position: -332px -7px;}
-        .lg {background-position: -397px -7px;}
-        .lh {background-position: -462px -7px;}
-        .li {background-position: -527px -7px;}
-        .lj {background-position: -592px -7px;}
-        .lk {background-position: -657px -7px;}
-        .ll {background-position: -722px -7px;}
-        .lm {background-position: -787px -7px;}
-        .ln {background-position: -852px -7px;}
-        .lo {background-position: -917px -7px;}
-        .lp {background-position: -982px -7px;}
-        .lq {background-position: -1047px -7px;}
-        .lr {background-position: -1112px -7px;}
-        .ls {background-position: -1177px -7px;}
-        .lt {background-position: -1242px -7px;}
-        .lu {background-position: -1307px -7px;}
-        .lv {background-position: -1372px -7px;}
-        .lw {background-position: -1437px -7px;}
-        .lx {background-position: -1502px -7px;}
-        .ly {background-position: -1567px -7px;}
-        .lz {background-position: -1632px -7px;}
+        .la {background-position: -2px -2px;}//
+        .lb {background-position: -67px -2px;}
+        .lc {background-position: -132px -2px;}
+        .ld {background-position: -197px -2px;}
+        .le {background-position: -262px -2px;}
+        .lf {background-position: -327px -2px;}
+        .lg {background-position: -392px -2px;}
+        .lh {background-position: -457px -2px;}
+        .li {background-position: -522px -2px;}
+        .lj {background-position: -587px -2px;}
+        .lk {background-position: -652px -2px;}
+        .ll {background-position: -717px -2px;}
+        .lm {background-position: -782px -2px;}
+        .ln {background-position: -847px -2px;}
+        .lo {background-position: -912px -2px;}
+        .lp {background-position: -977px -2px;}
+        .lq {background-position: -1042px -2px;}
+        .lr {background-position: -1107px -2px;}
+        .ls {background-position: -1172px -2px;}
+        .lt {background-position: -1237px -2px;}
+        .lu {background-position: -1302px -2px;}
+        .lv {background-position: -1367px -2px;}
+        .lw {background-position: -1432px -2px;}
+        .lx {background-position: -1497px -2px;}
+        .ly {background-position: -1562px -2px;}
+        .lz {background-position: -1627px -2px;}
+        
+        td .letter,
+        td .la,
+        td .lb,
+        td .lc,
+        td .ld,
+        td .le,
+        td .lf,
+        td .lg,
+        td .lh,
+        td .li,
+        td .lj,
+        td .lk,
+        td .ll,
+        td .lm,
+        td .ln,
+        td .lo,
+        td .lp,
+        td .lq,
+        td .lr,
+        td .ls,
+        td .lt,
+        td .lu,
+        td .lv,
+        td .lw,
+        td .lx,
+        td .ly,
+        td .lz
+        {
+            margin: 1px -1px -1px 1px;
+        }
         
         .draggable_letter
         {
@@ -89,9 +119,10 @@
         
         #tray_wrapper
         {
-            padding:10px 0;
-            height: 50px;
+            padding: 5px 5px;
+            height: 47px;
             border:1px solid #000;
+            /*overflow: hidden;*/
         }
         
         .letter_tray
@@ -217,6 +248,12 @@
                     tray_wrapper += "<div id='player_letter_" + i + "' class='draggable_letter'><div class='l" + l + "'>&nbsp;</div></div>";
                     tray_wrapper += "</div>";
                 }
+                
+                // This will allow us to have a wider tray for dropping letters back into
+                for (var j = 0; j < 15; j++)
+                {
+                    tray_wrapper += "<div class='letter_tray'><div class='draggable_letter'>&nbsp;</div></div>";
+                }
                 $('#tray_wrapper').html(tray_wrapper);
                 
                 $('.draggable_letter').draggable({
@@ -325,6 +362,25 @@
                     location.reload();
                 }
             }
+            
+            function forfeit_dialog ()
+            {
+                $("#forfeit_diaglog").dialog({
+                    resizable: false,
+                    height: 180,
+                    width: 400,
+                    modal: true,
+                    buttons: {
+                        "Forfeit the game": function() {
+                            $('#foreit_form').submit();
+                            $(this).dialog("close");
+                        },
+                        Cancel: function() {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
+            }
         </script>
         
         <div id="panel_response" style="display:none;" title="Failure">
@@ -341,7 +397,7 @@
                 </div>
                 
                 <div class="button" id="recall_button">Recall</div>
-                <br /><br />
+                <br />
                 
                 <div class="button" id="submit_button">Submit</div>
                 <br /><br />
@@ -354,6 +410,12 @@
                     ${pname}: ${scores[pname]}
                 </div>
                 
+                <div style="width:100%;" tal:condition="the_game.winner == None">
+                    <form id="foreit_form" action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8">
+                        <input type="hidden" name="forfeit" value="forfeit" />
+                        <div class="button" onclick="forfeit_dialog();">Forfeit</div>
+                    </form>
+                </div>
             </div>
             <div id="wordy_board">
                 &nbsp;
@@ -366,12 +428,13 @@
             <input type="hidden" name="letter${i}" id="letter${i}" value="" tal:repeat="i range(7)" />
             <span id="move_result" style="display:none;"></span>
         </form>
-        <!--
-        <div style="width:20px;height:20px;color:#FFF;background-color:#000;text-align:center;" id="move_points">30</div>
-        -->
         
         <div id="my_turn" style="display:none;">
             &nbsp;
+        </div>
+        
+        <div id="forfeit_diaglog" title="Forfeit game?" style="display:none;">
+            <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>Are you certain you want to forfeit this game, coward?</p>
         </div>
     </div>
 </div>

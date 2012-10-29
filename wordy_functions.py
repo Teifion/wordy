@@ -48,7 +48,7 @@ tls = (
 # ABCDEFGHIJKLMNO
 # 0123456789ABCDE
 
-default_bag = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ****"
+default_bag = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ**"
 default_bag = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ"
 
 dummy_board = """
@@ -370,6 +370,20 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     
     return "{} points".format(points)
 
+def forfeit_game(the_game, user_id):
+    if the_game.player1 == user_id:
+        the_game.winner = the_game.player2
+        the_game.turn_log += "\nForfeit by {}\nVictory for {}".format(
+            get_player_name(the_game.player1),
+            get_player_name(the_game.player2),
+        )
+    elif the_game.player2 == user_id:
+        the_game.winner = the_game.player2
+        the_game.turn_log += "\nForfeit by {}\nVictory for {}".format(
+            get_player_name(the_game.player1),
+            get_player_name(the_game.player2),
+        )
+
 # This is a function you might need to alter to get at the words from the database
 from ...models import (
     DBSession,
@@ -388,8 +402,7 @@ def update_game(the_game):
     # SQLAlchemy does this automatically for me but it's
     # here to make a hook easier for anything else
 
-line_points = re.compile(r"^(.+): [a-zA-Z]* for ([0-9]+) points$")
-# Leigh Bevan: Leg for 4 points
+line_points = re.compile(r"(.+): [a-zA-Z ]+ for ([0-9]+) points")
 def tally_scores(the_text):
     results = defaultdict(int)
     
