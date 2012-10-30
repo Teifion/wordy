@@ -130,13 +130,25 @@ def wordy_menu(request):
 
 @view_config(route_name='games/wordy/new_game', renderer='templates/new_game.pt', permission='loggedin')
 def new_game(request):
-    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    message = ""
+    flash_colour = "A00"
+    layout  = get_renderer('../../templates/layouts/empty.pt').implementation()
+    opponent_name = request.params.get('opponent_name', '').strip().upper()
     
-    if "form.submitted" in request.params:
-        opponent_name = request.params['opponent_name'].strip().upper()
+    if "form.submitted" in request.params and opponent_name != "":
+        opponent_id = DBSession.query(User.id).filter(User.name == opponent_name).first()
         
-        opponent_id = DBSession.query(User.id).filter(User.name == opponent_name).one()[0]
+        if opponent_id == None:
+            message = """I'm sorry, we can't find anbody by the name of "{}" """.format(request.params['opponent_name'].strip())
+            return dict(
+                title        = "Wordy - New game",
+                layout       = layout,
+                message      = message,
+                flash_colour = flash_colour,
+                opponent_name = request.params['opponent_name'].strip(),
+            )
         
+        opponent_id = opponent_id[0]
         new_game = WordyGame()
         new_game.player1 = request.user.id
         new_game.player2 = opponent_id
@@ -154,8 +166,11 @@ def new_game(request):
         return HTTPFound(location = request.route_url('games/wordy/game', game_id=new_game.id))
     
     return dict(
-        title        = "Wordy - New game",
-        layout       = layout,
+        title         = "Wordy - New game",
+        layout        = layout,
+        message       = message,
+        flash_colour  = flash_colour,
+        opponent_name = "",
     )
 
 @view_config(route_name='games/wordy/game', renderer='templates/wordy_game.pt', permission='loggedin')
