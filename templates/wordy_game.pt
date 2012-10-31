@@ -139,7 +139,7 @@
         }
     </style>
     
-    <div metal:fill-slot="extra_buttons" style="display:inline-block;">
+    <div metal:fill-slot="header_buttons" style="display:inline-block;">
         <a class="inbutton" href="${request.route_url('games/wordy')}">Wordy menu</a>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
