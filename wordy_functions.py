@@ -51,6 +51,26 @@ tls = (
 default_bag = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ**"
 default_bag = "EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ"
 
+testing_board = """
+ABCDEFGHIJKLMNO
+PQRSTUVWXYZ____
+_______________
+_______________
+_______________
+_______________
+_______________
+_______________
+_______________
+_______________
+_______________
+_______________
+_______________
+_______________
+_______________
+""".replace("\n","").replace("_"," ").strip()
+
+"ABCDEFGHIJKLMNOPQRSTUVWXYZ                                                                                                                                                                                                       "
+
 dummy_board = """
 ___Q___G_______
 ___U_P_A_______
@@ -110,6 +130,7 @@ letter_values = {
     "Z": 10,
     "*": 0,
     " ": 0,
+    "_": 0,
 }
 
 def _pp_board(the_board):
@@ -374,8 +395,8 @@ def forfeit_game(the_game, user_id):
     if the_game.player1 == user_id:
         the_game.winner = the_game.player2
         the_game.turn_log += "\nForfeit by {}\nVictory for {}".format(
-            get_player_name(the_game.player1),
             get_player_name(the_game.player2),
+            get_player_name(the_game.player1),
         )
     elif the_game.player2 == user_id:
         the_game.winner = the_game.player2
