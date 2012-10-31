@@ -54,7 +54,7 @@
             cursor: pointer;
         }
         
-        .la {background-position: -2px -2px;}//
+        .la {background-position: -2px -2px;}
         .lb {background-position: -67px -2px;}
         .lc {background-position: -132px -2px;}
         .ld {background-position: -197px -2px;}
@@ -140,7 +140,7 @@
     </style>
     
     <div metal:fill-slot="extra_buttons" style="display:inline-block;">
-        <a class="inbutton" href="${request.route_url('games/wordy')}">Back to Menu</a>
+        <a class="inbutton" href="${request.route_url('games/wordy')}">Wordy menu</a>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     </div>
     
