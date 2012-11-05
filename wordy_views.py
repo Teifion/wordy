@@ -87,8 +87,21 @@ def wordy_menu(request):
     user_ids = []
     your_turn = []
     their_turn = []
+    ended_games = []
     for g in game_list:
         cturn = wordy_functions.player_turn(g.turn)
+        
+        user_ids.append(g.player1)
+        user_ids.append(g.player2)
+        
+        if g.winner != None:
+            if g.player1 == user_id:
+                g.opponent = g.player2
+            else:
+                g.opponent = g.player1
+            
+            ended_games.append(g)
+            continue
         
         if cturn == 1:
             if g.player1 == user_id:
@@ -105,9 +118,6 @@ def wordy_menu(request):
                 their_turn.append(g)
                 g.opponent = g.player2
         
-        user_ids.append(g.player1)
-        user_ids.append(g.player2)
-        
         # These could be null
         if g.player3: user_ids.append(g.player3)
         if g.player4: user_ids.append(g.player4)
@@ -116,6 +126,7 @@ def wordy_menu(request):
     usernames = {}
     for uid, uname in DBSession.query(User.id, User.name).filter(User.id.in_(user_ids)).limit(len(user_ids)):
         usernames[uid] = uname
+    usernames[-1] = "Draw"
     
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
@@ -126,6 +137,7 @@ def wordy_menu(request):
         layout     = layout,
         your_turn  = your_turn,
         their_turn = their_turn,
+        ended_games = ended_games,
     )
 
 @view_config(route_name='games/wordy/new_game', renderer='templates/new_game.pt', permission='loggedin')
@@ -220,6 +232,10 @@ def make_move(request):
     # Special "moves"
     if "forfeit" in request.params:
         wordy_functions.forfeit_game(the_game, request.user.id)
+        return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
+    
+    if "swap" in request.params:
+        wordy_functions.swap_letters(the_game, request.user.id)
         return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
     
     if the_game.player1 == request.user.id:

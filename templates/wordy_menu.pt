@@ -7,6 +7,15 @@
             width:100%;
             border-bottom:1px solid #AAA;
         }
+        
+        .half_game_row
+        {
+            border:0px solid #000;
+            padding:10px 0;
+            width:49%;
+            border-bottom:1px solid #AAA;
+            float: left;
+        }
     </style>
     
     <div metal:fill-slot="content">
@@ -20,7 +29,7 @@
             <a href="${request.route_url('games/wordy/new_game')}" class="inbutton">New game</a>
             <br /><br /><br />
             
-            <div style="float:left;width:49%;">
+            <div style="float:left;width:49%;" tal:condition="len(your_turn) > 0">
                 <h3>Games awaiting your move</h3>
                 <div class="game_row" tal:repeat="the_game your_turn">
                     <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">Play</a>
@@ -30,12 +39,27 @@
                 </div>
             </div>
             
-            <div style="float:right;width:49%;">
+            <div style="float:right;width:49%;" tal:condition="len(their_turn) > 0">
                 <h3>Games awaiting opponent's move</h3>
                 <div class="game_row" tal:repeat="the_game their_turn">
                     <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">View</a>
                     Turn: ${the_game.turn}<br />
                     Opponent: ${usernames[the_game.opponent]}
+                    <div style="clear:both;height:0px;">&nbsp;</div>
+                </div>
+            </div>
+        </div>
+        
+        <div tal:condition="len(ended_games) > 0">
+            <div onclick="$('#ended_games').show(); $('#show_finished_button').hide();" id="show_finished_button" class="inbutton">Show ${len(ended_games)} finished games</div>
+            
+            <div id="ended_games" style="display:none;">
+                <h3>Completed games</h3>
+                <div class="half_game_row" tal:repeat="the_game ended_games">
+                    <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">View</a>
+                    Turn: ${the_game.turn}<br />
+                    Opponent: ${usernames[the_game.opponent]}
+                    Winner: ${usernames[the_game.winner]}
                     <div style="clear:both;height:0px;">&nbsp;</div>
                 </div>
             </div>

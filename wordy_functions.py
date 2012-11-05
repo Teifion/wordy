@@ -347,7 +347,6 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
             raise KeyError("{} and {} are not valid words".format(", ".join(invalid[:-1]), invalid[-1]))
     
     # At this stage it's been a success, we need to update the board and player tiles
-    
     new_tiles, new_bag = pick_from_bag(the_game.game_bag, tiles=len(new_letters))
     
     for l, x, y in new_letters:
@@ -383,27 +382,86 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         points = points,
     )
     the_game.turn_log = the_game.turn_log.strip()
-    update_game(the_game)
     
     # They may just want to know how many points this will score
     if len(new_letters) == 7:
         points += 50
     
+    # Do we need to end the game?
+    if scan_for_end(the_game):
+        player_1_name = get_player_name(the_game.player1)
+        player_2_name = get_player_name(the_game.player2)
+        
+        scores = tally_scores(the_game.turn_log)
+        
+        if scores.get(player_1_name, 0) > scores.get(player_2_name, 0):
+            the_game.winner = the_game.player1
+            the_game.turn_log += "\n{} has won the game {} points to {}".format(
+                player_1_name,
+                scores.get(player_1_name, 0),
+                scores.get(player_2_name, 0)
+            )
+            
+        elif scores.get(player_1_name, 0) < scores.get(player_2_name, 0):
+            the_game.winner = the_game.player2
+            the_game.turn_log += "\n{} has won the game {} points to {}".format(
+                player_2_name,
+                scores.get(player_2_name, 0),
+                scores.get(player_1_name, 0)
+            )
+            
+        else:
+            # Draw
+            the_game.winner = -1
+            the_game.turn_log += "\nThe game has ended in a draw"
+        
+        print("\n\n\n\n\n")
+        print(scores)
+        print("\n\n\n\n\n")
+        # the_game.winner = 1
+    
+    update_game(the_game)
     return "{} points".format(points)
+
+def scan_for_end(the_game):
+    if the_game.game_bag == "":
+        if the_game.player1_tiles == "" or the_game.player2_tiles == "":
+            return True
+    
+    return False
 
 def forfeit_game(the_game, user_id):
     if the_game.player1 == user_id:
         the_game.winner = the_game.player2
         the_game.turn_log += "\nForfeit by {}\nVictory for {}".format(
-            get_player_name(the_game.player2),
             get_player_name(the_game.player1),
+            get_player_name(the_game.player2),
         )
     elif the_game.player2 == user_id:
-        the_game.winner = the_game.player2
+        the_game.winner = the_game.player1
         the_game.turn_log += "\nForfeit by {}\nVictory for {}".format(
-            get_player_name(the_game.player1),
             get_player_name(the_game.player2),
+            get_player_name(the_game.player1),
         )
+
+def swap_letters(the_game, user_id):
+    p_turn = player_turn(the_game.turn)
+    
+    if the_game.player1 == user_id and p_turn == 1:
+        full_bag = the_game.game_bag + the_game.player1_tiles
+        the_game.player1_tiles, the_game.game_bag = pick_from_bag(full_bag, tiles=7)
+    elif the_game.player2 == user_id and p_turn == 2:
+        full_bag = the_game.game_bag + the_game.player2_tiles
+        the_game.player2_tiles, the_game.game_bag = pick_from_bag(full_bag, tiles=7)
+    else:
+        return
+    
+    the_game.turn_log += "\n{player_name} swapped their tiles".format(
+        player_name = get_player_name(user_id),
+    )
+    the_game.turn_log = the_game.turn_log.strip()
+    the_game.turn += 1
+    update_game(the_game)
 
 # This is a function you might need to alter to get at the words from the database
 from ...models import (
