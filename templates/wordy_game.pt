@@ -172,14 +172,20 @@
                 $('#recall_button').click(function() {
                     draw_board();
                 });
+                $('#recall_button2').click(function() {
+                    draw_board();
+                });
                 
                 $('#submit_button').click(function() {
+                    submit_letters();
+                });
+                $('#submit_button2').click(function() {
                     submit_letters();
                 });
                 
                 draw_board();
             }
-
+            
             function draw_board ()
             {
                 var board_row, l, letter, tile_type, tray_wrapper, wordy_board;
@@ -465,9 +471,9 @@
         </form>
         
         <div id="wordy_bottom_nav" style="display:none; width:740px;">
-            <div class="inbutton" id="recall_button">Recall</div>
-            <div class="inbutton" id="recall_button" onclick="$('#wordy_bottom_nav').hide(); $('#wordy_right_nav').show();">Show sidebar</div>
-            <div class="inbutton" id="submit_button" style="float:right;">Submit</div>
+            <div class="inbutton" id="recall_button2">Recall</div>
+            <div class="inbutton" id="recall_button2" onclick="$('#wordy_bottom_nav').hide(); $('#wordy_right_nav').show();">Show sidebar</div>
+            <div class="inbutton" id="submit_button2" style="float:right;">Submit</div>
         </div>
         
         <div id="my_turn" style="display:none;">
