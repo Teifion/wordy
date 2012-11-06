@@ -50,7 +50,7 @@
             </div>
         </div>
         
-        <div tal:condition="len(ended_games) > 0">
+        <div tal:condition="len(ended_games) > 0" style="clear:both;">
             <div onclick="$('#ended_games').show(); $('#show_finished_button').hide();" id="show_finished_button" class="inbutton">Show ${len(ended_games)} finished games</div>
             
             <div id="ended_games" style="display:none;">
