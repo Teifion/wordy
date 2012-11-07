@@ -216,6 +216,23 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     
     if len(xs) > 1 and len(ys) > 1:
         raise KeyError("You must place all your tiles in one row or one column")
+        
+    # Now make sure they're placing the tiles next to existing tiles
+    # At least one tiles needs to be non-diagonally next to another
+    is_next_to_a_tile = False
+    for l, x, y in new_letters:
+        if is_next_to_a_tile: continue
+        
+        # X
+        if x > 0 and b[x-1][y] != " ": is_next_to_a_tile = True
+        if x < 14 and b[x+1][y] != " ": is_next_to_a_tile = True
+        
+        # Y
+        if y > 0 and b[x][y-1] != " ": is_next_to_a_tile = True
+        if y < 14 and b[x][y+1] != " ": is_next_to_a_tile = True
+    
+    if not is_next_to_a_tile and the_game.turn > 0:
+        raise KeyError("You must place your tiles next to existing tiles")
     
     # Next we want to make sure there are no gaps between our tiles
     if len(xs) > 1:

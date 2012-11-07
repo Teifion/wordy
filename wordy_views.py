@@ -263,6 +263,7 @@ def make_move(request):
     except Exception as e:
         result = "failure:%s" % e.args[0]
     
+    request.do_not_log = True
     return result
 
 @view_config(route_name='games/wordy/test_move', renderer='string', permission='view')
@@ -295,6 +296,7 @@ def test_move(request):
     except Exception:
         result = 0
     
+    request.do_not_log = True
     return result
 
 # Is it my turn yet?
@@ -309,12 +311,14 @@ def check_status(request):
     if player_turn == 1 and request.user.id == p1: your_turn = True
     if player_turn == 2 and request.user.id == p2: your_turn = True
     
+    request.do_not_log = True
     return str(your_turn)
 
 @view_config(route_name='games/wordy/get_updated_board', renderer='templates/wordy_game.pt', permission='loggedin')
 def get_updated_board(request):
     layout = get_renderer('../../templates/layouts/empty.pt').implementation()
     
+    request.do_not_log = True
     return dict(
         title         = "wordy",
         layout        = layout,
