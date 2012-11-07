@@ -207,7 +207,12 @@ def view_game(request):
         raise Exception("You are not a player")
     
     the_board = wordy_functions.string_to_board(the_game.board.lower())
-    scores = wordy_functions.tally_scores(the_game.turn_log)
+    scores = wordy_functions.tally_scores(the_game)
+    
+    del(scores[1])
+    del(scores[2])
+    del(scores[3])
+    del(scores[4])
     
     turn_log = []
     for l in the_game.turn_log.split("\n"):

@@ -409,19 +409,22 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         player_1_name = get_player_name(the_game.player1)
         player_2_name = get_player_name(the_game.player2)
         
-        scores = tally_scores(the_game.turn_log)
+        scores = tally_scores(the_game)
         
-        if scores.get(player_1_name, 0) > scores.get(player_2_name, 0):
+        scores[player_1_name] = scores.get(player_1_name, 0) + scores[2]
+        scores[player_2_name] = scores.get(player_2_name, 0) + scores[1]
+        
+        if scores[player_1_name] > scores[player_2_name]:
             the_game.winner = the_game.player1
-            the_game.turn_log += "\n{} has won the game {} points to {}".format(
+            the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
                 player_1_name,
                 scores.get(player_1_name, 0),
                 scores.get(player_2_name, 0)
             )
             
-        elif scores.get(player_1_name, 0) < scores.get(player_2_name, 0):
+        elif scores[player_1_name] < scores[player_2_name]:
             the_game.winner = the_game.player2
-            the_game.turn_log += "\n{} has won the game {} points to {}".format(
+            the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
                 player_2_name,
                 scores.get(player_2_name, 0),
                 scores.get(player_1_name, 0)
@@ -430,12 +433,7 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         else:
             # Draw
             the_game.winner = -1
-            the_game.turn_log += "\nThe game has ended in a draw"
-        
-        print("\n\n\n\n\n")
-        print(scores)
-        print("\n\n\n\n\n")
-        # the_game.winner = 1
+            the_game.turn_log += "\n\nAfter counting tiles, the game has ended in a draw"
     
     update_game(the_game)
     return "{} points".format(points)
@@ -499,14 +497,21 @@ def update_game(the_game):
     # here to make a hook easier for anything else
 
 line_points = re.compile(r"(.+): [a-zA-Z ]+ for ([0-9]+) points")
-def tally_scores(the_text):
+def tally_scores(the_game):
     results = defaultdict(int)
     
-    for l in the_text.split("\n"):
+    # Add it up from the turn log
+    for l in the_game.turn_log.split("\n"):
         r = line_points.search(l.strip())
         
         if r != None:
             name, points = r.groups()
             results[name] += int(points)
+    
+    # Add in remaining tiles
+    results[1] = sum([letter_values[l] for l in the_game.player1_tiles])
+    results[2] = sum([letter_values[l] for l in the_game.player2_tiles])
+    results[3] = sum([letter_values[l] for l in the_game.player2_tiles])
+    results[4] = sum([letter_values[l] for l in the_game.player2_tiles])
     
     return results
