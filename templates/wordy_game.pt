@@ -380,11 +380,11 @@
                     width: 400,
                     modal: true,
                     buttons: {
-                        "Forfeit the game": function() {
-                            $('#foreit_form').submit();
+                        Cancel: function() {
                             $(this).dialog("close");
                         },
-                        Cancel: function() {
+                        "Forfeit the game": function() {
+                            $('#foreit_form').submit();
                             $(this).dialog("close");
                         }
                     }
@@ -401,11 +401,32 @@
                     width: 400,
                     modal: true,
                     buttons: {
+                        Cancel: function() {
+                            $(this).dialog("close");
+                        },
                         "Swap tiles": function() {
                             $('#swap_form').submit();
                             $(this).dialog("close");
-                        },
+                        }
+                    }
+                });
+            }
+            
+            function pass_dialog ()
+            {
+                var data = {"pass":"pass"};
+                
+                $("#pass_dialog").dialog({
+                    resizable: false,
+                    height: 180,
+                    width: 400,
+                    modal: true,
+                    buttons: {
                         Cancel: function() {
+                            $(this).dialog("close");
+                        },
+                        "Pass turn": function() {
+                            $('#pass_form').submit();
                             $(this).dialog("close");
                         }
                     }
@@ -452,6 +473,12 @@
                         <div class="button" onclick="forfeit_dialog();">Forfeit</div>
                     </form>
                     
+                    <!-- Pass -->
+                    <form tal:condition="your_turn == True" id="pass_form" action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8">
+                        <input type="hidden" name="pass" value="pass" />
+                        <div class="button" onclick="pass_dialog();">I can't move</div>
+                    </form>
+                    
                     <!-- Swap -->
                     <form tal:condition="your_turn == True" id="swap_form" action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8">
                         <input type="hidden" name="swap" value="swap" />
@@ -484,6 +511,10 @@
         
         <div id="forfeit_dialog" title="Forfeit game?" style="display:none;">
             <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>Are you certain you want to forfeit this game, coward?</p>
+        </div>
+        
+        <div id="pass_dialog" title="Pass turn?" style="display:none;">
+            <p><span class="ui-icon ui-icon-alert" style="float: left; margin: 0 7px 20px 0;"></span>Are you certain you want to pass on this turn? If your opponent also doesn't make a move then the game will end.</p>
         </div>
         
         <div id="swap_dialog" title="Swap tiles?" style="display:none;">

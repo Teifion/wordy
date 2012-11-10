@@ -9,7 +9,7 @@ dws = (
       (2,2),          (12,2),
         (3,3),      (11,3),
           (4,4),  (10,4),
-    
+        
           (4,10), (10,10),
         (3,11),     (11,11),
       (2,12),         (12,12),
@@ -30,7 +30,7 @@ dls = (
         (2,6),    (6,6),  (8,6),    (12,6),
           (3,7),                  (11,7),
         (2,8),    (6,8),  (8,8),    (12,8),
-        
+       
     (0,11),           (7,11),             (14,11),
                   (6,12), (8,12),
           (3,14),                  (11,14),
@@ -205,48 +205,52 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     for l, x, y in new_letters:
         if x < 0 or x > 14 or y < 0 or y > 14:
             raise KeyError("{},{} is not a valid tile (15x15 board size)".format(x, y))
-        
+       
         if b[y][x] != " ":
             raise KeyError("{},{} is already occupied by a letter".format(x, y))
-        
-        b[y][x] = l
-        
+       
+        # b[y][x] = l
+       
         xs.add(x)
         ys.add(y)
     
     if len(xs) > 1 and len(ys) > 1:
         raise KeyError("You must place all your tiles in one row or one column")
-        
+       
     # Now make sure they're placing the tiles next to existing tiles
     # At least one tiles needs to be non-diagonally next to another
     is_next_to_a_tile = False
     for l, x, y in new_letters:
         if is_next_to_a_tile: continue
-        
+       
         # X
-        if x > 0 and b[x-1][y] != " ": is_next_to_a_tile = True
-        if x < 14 and b[x+1][y] != " ": is_next_to_a_tile = True
-        
+        if x > 0 and b[y][x-1] != " ": is_next_to_a_tile = True
+        if x < 14 and b[y][x+1] != " ": is_next_to_a_tile = True
+       
         # Y
-        if y > 0 and b[x][y-1] != " ": is_next_to_a_tile = True
-        if y < 14 and b[x][y+1] != " ": is_next_to_a_tile = True
+        if y > 0 and b[y-1][x] != " ": is_next_to_a_tile = True
+        if y < 14 and b[y+1][x] != " ": is_next_to_a_tile = True
     
     if not is_next_to_a_tile and the_game.turn > 0:
         raise KeyError("You must place your tiles next to existing tiles")
+    
+    # Add letters to the board
+    for l, x, y in new_letters:
+        b[y][x] = l
     
     # Next we want to make sure there are no gaps between our tiles
     if len(xs) > 1:
         minx, maxx = min(xs), max(xs)
         y = list(ys)[0]
-        
+       
         for x in range(minx, maxx):
             if b[y][x] == " ":
                 raise KeyError("Your tiles must all be part of the same word (no gaps allowed)")
-        
+       
     if len(ys) > 1:
         miny, maxy = min(ys), max(ys)
         x = list(xs)[0]
-        
+       
         for y in range(miny, maxy):
             if b[y][x] == " ":
                 raise KeyError("Your tiles must all be part of the same word (no gaps allowed)")
@@ -261,18 +265,18 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     covered = set()
     for l, x, y in new_letters:
         if (x,y) in covered: continue
-        
+       
         # Go left until we hit an empty space or edge of the board
         temp_x = x
         temp_l = l
         while temp_x >= 0 and temp_l != " ":
             temp_l = b[y][temp_x]
             temp_x -= 1
-        
+       
         temp_x += 1
         if temp_l == " ": temp_x += 1
         temp_l = ""
-        
+       
         # Read right until the same, this is one word
         new_word = []
         word_points = 0
@@ -281,20 +285,20 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
             covered.add((temp_x, y))
             temp_l = b[y][temp_x]
             new_word.append(temp_l)
-            
+           
             letter_multiplier = 1
-            
+           
             # If it's fresh we check for special tiles
             if (temp_l, temp_x, y) in new_letters:
                 if (temp_x, y) in dws: word_multiplier *= 2
                 if (temp_x, y) in tws: word_multiplier *= 3
-                
+               
                 if (temp_x, y) in dls: letter_multiplier = 2
                 if (temp_x, y) in tls: letter_multiplier = 3
-            
+           
             word_points += (letter_values[temp_l] * letter_multiplier)
             temp_x += 1
-        
+       
         new_word = "".join(new_word).strip()
         if len(new_word) > 1:
             points += (word_points * word_multiplier)
@@ -305,18 +309,18 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     covered = set()
     for l, x, y in new_letters:
         if (x,y) in covered: continue
-        
+       
         # Go left until we hit an empty space or edge of the board
         temp_y = y
         temp_l = l
         while temp_y >= 0 and temp_l != " ":
             temp_l = b[temp_y][x]
             temp_y -= 1
-        
+       
         temp_y += 1
         if temp_l == " ": temp_y += 1
         temp_l = ""
-        
+       
         # Read right until the same, this is one word
         new_word = []
         word_points = 0
@@ -325,20 +329,20 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
             covered.add((x, temp_y))
             temp_l = b[temp_y][x]
             new_word.append(temp_l)
-            
+           
             letter_multiplier = 1
-            
+           
             # If it's fresh we check for special tiles
             if (temp_l, x, temp_y) in new_letters:
                 if (x, temp_y) in dws: word_multiplier *= 2
                 if (x, temp_y) in tws: word_multiplier *= 3
-                
+               
                 if (x, temp_y) in dls: letter_multiplier = 2
                 if (x, temp_y) in tls: letter_multiplier = 3
-            
+           
             word_points += (letter_values[temp_l] * letter_multiplier)
             temp_y += 1
-        
+       
         new_word = "".join(new_word).strip()
         if len(new_word) > 1:
             points += (word_points * word_multiplier)
@@ -408,12 +412,12 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     if scan_for_end(the_game):
         player_1_name = get_player_name(the_game.player1)
         player_2_name = get_player_name(the_game.player2)
-        
+       
         scores = tally_scores(the_game)
-        
+       
         scores[player_1_name] = scores.get(player_1_name, 0) + scores[2]
         scores[player_2_name] = scores.get(player_2_name, 0) + scores[1]
-        
+       
         if scores[player_1_name] > scores[player_2_name]:
             the_game.winner = the_game.player1
             the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
@@ -429,7 +433,7 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
                 scores.get(player_2_name, 0),
                 scores.get(player_1_name, 0)
             )
-            
+           
         else:
             # Draw
             the_game.winner = -1
@@ -478,6 +482,68 @@ def swap_letters(the_game, user_id):
     the_game.turn += 1
     update_game(the_game)
 
+pass_turn_search = re.compile(r"^.* passed on their turn$")
+def pass_turn(the_game, user_id):
+    p_turn = player_turn(the_game.turn)
+    
+    if the_game.player1 == user_id and p_turn == 1:
+        pass
+    elif the_game.player2 == user_id and p_turn == 2:
+        pass
+    else:
+        return
+    
+    last_log = the_game.turn_log.split("\n")[-1]
+    if pass_turn_search.search(last_log):
+        the_game.winner = -1
+        the_game.turn_log += "\n{player_name} passed on their turn".format(
+            player_name = get_player_name(user_id),
+        )
+        
+        # Now end the game
+        the_game.turn_log += "\nAs both players have ended passed on their turn, the game is ended".format(
+            player_name = get_player_name(user_id),
+        )
+        player_1_name = get_player_name(the_game.player1)
+        player_2_name = get_player_name(the_game.player2)
+       
+        scores = tally_scores(the_game)
+       
+        scores[player_1_name] = scores.get(player_1_name, 0) + scores[2]
+        scores[player_2_name] = scores.get(player_2_name, 0) + scores[1]
+       
+        if scores[player_1_name] > scores[player_2_name]:
+            the_game.winner = the_game.player1
+            the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
+                player_1_name,
+                scores.get(player_1_name, 0),
+                scores.get(player_2_name, 0)
+            )
+            
+        elif scores[player_1_name] < scores[player_2_name]:
+            the_game.winner = the_game.player2
+            the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
+                player_2_name,
+                scores.get(player_2_name, 0),
+                scores.get(player_1_name, 0)
+            )
+           
+        else:
+            # Draw
+            the_game.winner = -1
+            the_game.turn_log += "\n\nAfter counting tiles, the game has ended in a draw"
+        
+        update_game(the_game)
+        
+    else:
+        the_game.turn_log += "\n{player_name} passed on their turn".format(
+            player_name = get_player_name(user_id),
+        )
+        the_game.turn_log = the_game.turn_log.strip()
+        the_game.turn += 1
+        update_game(the_game)
+
+
 # This is a function you might need to alter to get at the words from the database
 from ...models import (
     DBSession,
@@ -503,7 +569,7 @@ def tally_scores(the_game):
     # Add it up from the turn log
     for l in the_game.turn_log.split("\n"):
         r = line_points.search(l.strip())
-        
+       
         if r != None:
             name, points = r.groups()
             results[name] += int(points)

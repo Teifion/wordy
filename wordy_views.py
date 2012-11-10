@@ -243,6 +243,10 @@ def make_move(request):
         wordy_functions.swap_letters(the_game, request.user.id)
         return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
     
+    if "pass" in request.params:
+        wordy_functions.pass_turn(the_game, request.user.id)
+        return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
+    
     if the_game.player1 == request.user.id:
         player_letters = the_game.player1_tiles
     elif the_game.player2 == request.user.id:
