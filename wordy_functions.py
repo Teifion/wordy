@@ -1,6 +1,27 @@
 import random
 import re
 from collections import defaultdict
+from . import achievement_functions
+
+# Register achievements
+achievement_functions.register([
+    ("wordy_bingo", "Bingo!", "Use all your letters in one go", 5, 5),
+    ("wordy_5_letter", "5 letter word", "5 letter word", 5, 20),
+    ("wordy_6_letter", "6 letter word", "6 letter word", 10, 10),
+    ("wordy_7_letter", "7 letter word", "7 letter word", 15, 8),
+    ("wordy_8_letter", "8 letter word", "8 letter word", 20, 5),
+    ("wordy_9_letter", "9 letter word", "9 letter word", 25, 3),
+    ("wordy_10_letter", "10 letter word", "10 letter word", 30, 1),
+    ("wordy_start_and_end", "Start and end with the same letter", "Having a word start and end with the same letter", 10, 5),
+    ("wordy_1000_tiles", "Well spoken", "Place a total of 100 tiles", 5, 100),
+    ("wordy_1000_tiles", "Eloquent", "Place a total of 500 tiles", 10, 500),
+    ("wordy_1000_tiles", "Sesquipedalian", "Place a total of 1000 tiles", 20, 1000),
+    ("wordy_win_5_games", "Five time champion", "Win 5 games of wordy", 5, 5),
+    ("wordy_win_10_games", "Ten time champion", "Win 10 games of wordy", 10, 5),
+    ("wordy_win_15_games", "Fifteen time champion", "Win 15 games of wordy", 15, 5),
+    ("wordy_win_25_games", "Twentyfive time champion", "Win 25 games of wordy", 20, 5),
+    ("wordy_dominant", "Dominance", "Defeat the same opponent 10 times", 20, 10),
+])
 
 # http://en.wikipedia.org/w/index.php?title=File:Blank_Scrabble_board_with_coordinates.svg&page=1
 # Double/Triple word scores
@@ -30,7 +51,7 @@ dls = (
         (2,6),    (6,6),  (8,6),    (12,6),
           (3,7),                  (11,7),
         (2,8),    (6,8),  (8,8),    (12,8),
-       
+        
     (0,11),           (7,11),             (14,11),
                   (6,12), (8,12),
           (3,14),                  (11,14),
@@ -171,31 +192,27 @@ def pick_from_bag(the_bag, tiles=7):
     
     return "".join(letters), "".join(new_bag)
 
-def player_turn(turn_number, players = 2):
-    return 1 + (turn_number % players)
+def player_turn(the_game):
+    return the_game.turn % len(the_game.players)
+
+def player_number(the_game, user_id):
+    if user_id in the_game.players:
+        return the_game.players.index(user_id)
+    else:
+        raise Exception("You are not a player")
 
 def perform_move(the_game, player_id, new_letters):
     return attempt_move(the_game, player_id, new_letters, perform=True)
 
 def attempt_move(the_game, player_id, new_letters, perform=False):
     # Whose turn is it anyways?
-    p_turn = player_turn(the_game.turn)
-    not_your_turn = False
-    if p_turn == 1:
-        player_letters = the_game.player1_tiles
-        if the_game.player1 != player_id: not_your_turn = True
-    elif p_turn == 2:
-        player_letters = the_game.player2_tiles
-        if the_game.player2 != player_id: not_your_turn = True
-    elif p_turn == 3:
-        player_letters = the_game.player3_tiles
-        if the_game.player3 != player_id: not_your_turn = True
-    elif p_turn == 4:
-        player_letters = the_game.player4_tiles
-        if the_game.player4 != player_id: not_your_turn = True
+    p_turn = player_turn(the_game)
     
-    if not_your_turn:
-        raise Exception("It is not your turn yet")
+    if player_id != the_game.players[p_turn]:
+        raise KeyError("It is not your turn yet")
+    
+    pnum = player_number(the_game, player_id)
+    player_letters = the_game.tiles[pnum]
     
     # Get the board as a string
     b = string_to_board(the_game.board)
@@ -205,33 +222,31 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     for l, x, y in new_letters:
         if x < 0 or x > 14 or y < 0 or y > 14:
             raise KeyError("{},{} is not a valid tile (15x15 board size)".format(x, y))
-       
+        
         if b[y][x] != " ":
             raise KeyError("{},{} is already occupied by a letter".format(x, y))
-       
-        # b[y][x] = l
-       
+        
         xs.add(x)
         ys.add(y)
     
     if len(xs) > 1 and len(ys) > 1:
         raise KeyError("You must place all your tiles in one row or one column")
-       
+        
     # Now make sure they're placing the tiles next to existing tiles
     # At least one tiles needs to be non-diagonally next to another
     is_next_to_a_tile = False
     for l, x, y in new_letters:
         if is_next_to_a_tile: continue
-       
+        
         # X
         if x > 0 and b[y][x-1] != " ": is_next_to_a_tile = True
         if x < 14 and b[y][x+1] != " ": is_next_to_a_tile = True
-       
+        
         # Y
         if y > 0 and b[y-1][x] != " ": is_next_to_a_tile = True
         if y < 14 and b[y+1][x] != " ": is_next_to_a_tile = True
     
-    if not is_next_to_a_tile and the_game.turn > 0:
+    if not is_next_to_a_tile and the_game.board != " "*255:
         raise KeyError("You must place your tiles next to existing tiles")
     
     # Add letters to the board
@@ -242,15 +257,15 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     if len(xs) > 1:
         minx, maxx = min(xs), max(xs)
         y = list(ys)[0]
-       
+        
         for x in range(minx, maxx):
             if b[y][x] == " ":
                 raise KeyError("Your tiles must all be part of the same word (no gaps allowed)")
-       
+        
     if len(ys) > 1:
         miny, maxy = min(ys), max(ys)
         x = list(xs)[0]
-       
+        
         for y in range(miny, maxy):
             if b[y][x] == " ":
                 raise KeyError("Your tiles must all be part of the same word (no gaps allowed)")
@@ -265,18 +280,18 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     covered = set()
     for l, x, y in new_letters:
         if (x,y) in covered: continue
-       
+        
         # Go left until we hit an empty space or edge of the board
         temp_x = x
         temp_l = l
         while temp_x >= 0 and temp_l != " ":
             temp_l = b[y][temp_x]
             temp_x -= 1
-       
+        
         temp_x += 1
         if temp_l == " ": temp_x += 1
         temp_l = ""
-       
+        
         # Read right until the same, this is one word
         new_word = []
         word_points = 0
@@ -298,7 +313,7 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
            
             word_points += (letter_values[temp_l] * letter_multiplier)
             temp_x += 1
-       
+        
         new_word = "".join(new_word).strip()
         if len(new_word) > 1:
             points += (word_points * word_multiplier)
@@ -309,18 +324,18 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     covered = set()
     for l, x, y in new_letters:
         if (x,y) in covered: continue
-       
+        
         # Go left until we hit an empty space or edge of the board
         temp_y = y
         temp_l = l
         while temp_y >= 0 and temp_l != " ":
             temp_l = b[temp_y][x]
             temp_y -= 1
-       
+        
         temp_y += 1
         if temp_l == " ": temp_y += 1
         temp_l = ""
-       
+        
         # Read right until the same, this is one word
         new_word = []
         word_points = 0
@@ -342,7 +357,7 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
            
             word_points += (letter_values[temp_l] * letter_multiplier)
             temp_y += 1
-       
+        
         new_word = "".join(new_word).strip()
         if len(new_word) > 1:
             points += (word_points * word_multiplier)
@@ -377,18 +392,10 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     the_game.turn += 1
     the_game.game_bag = new_bag
     
-    if p_turn == 1:
-        the_game.player1_tiles = player_letters + new_tiles
-        player_name = get_player_name(the_game.player1)
-    elif p_turn == 2:
-        the_game.player2_tiles = player_letters + new_tiles
-        player_name = get_player_name(the_game.player2)
-    elif p_turn == 3:
-        the_game.player3_tiles = player_letters + new_tiles
-        player_name = get_player_name(the_game.player3)
-    elif p_turn == 4:
-        the_game.player4_tiles = player_letters + new_tiles
-        player_name = get_player_name(the_game.player4)
+    the_game.tiles[pnum] = player_letters + new_tiles
+    names = get_player_name(the_game.players)
+    
+    the_game.tiles = tuple(the_game.tiles)
     
     # Build a description of the words
     words = [w.title() for w in words]
@@ -398,7 +405,7 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         word_string = "{} and {}".format(", ".join(words[:-1]), words[-1])
     
     the_game.turn_log += "\n{player_name}: {the_word} for {points} points".format(
-        player_name = player_name,
+        player_name = names[the_game.players[pnum]],
         the_word = word_string,
         points = points,
     )
@@ -410,43 +417,15 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     
     # Do we need to end the game?
     if scan_for_end(the_game):
-        player_1_name = get_player_name(the_game.player1)
-        player_2_name = get_player_name(the_game.player2)
-       
-        scores = tally_scores(the_game)
-       
-        scores[player_1_name] = scores.get(player_1_name, 0) + scores[2]
-        scores[player_2_name] = scores.get(player_2_name, 0) + scores[1]
-       
-        if scores[player_1_name] > scores[player_2_name]:
-            the_game.winner = the_game.player1
-            the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
-                player_1_name,
-                scores.get(player_1_name, 0),
-                scores.get(player_2_name, 0)
-            )
-            
-        elif scores[player_1_name] < scores[player_2_name]:
-            the_game.winner = the_game.player2
-            the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
-                player_2_name,
-                scores.get(player_2_name, 0),
-                scores.get(player_1_name, 0)
-            )
-           
-        else:
-            # Draw
-            the_game.winner = -1
-            the_game.turn_log += "\n\nAfter counting tiles, the game has ended in a draw"
+        end_game(the_game, names)
     
     update_game(the_game)
     return "{} points".format(points)
 
 def scan_for_end(the_game):
     if the_game.game_bag == "":
-        if the_game.player1_tiles == "" or the_game.player2_tiles == "":
+        if "" in the_game.tiles:
             return True
-    
     return False
 
 def forfeit_game(the_game, user_id):
@@ -463,86 +442,83 @@ def forfeit_game(the_game, user_id):
             get_player_name(the_game.player1),
         )
 
+pass_turn_search = re.compile(r"^.* swapped their tiles$")
 def swap_letters(the_game, user_id):
-    p_turn = player_turn(the_game.turn)
+    pturn = player_turn(the_game)
     
-    if the_game.player1 == user_id and p_turn == 1:
-        full_bag = the_game.game_bag + the_game.player1_tiles
-        the_game.player1_tiles, the_game.game_bag = pick_from_bag(full_bag, tiles=7)
-    elif the_game.player2 == user_id and p_turn == 2:
-        full_bag = the_game.game_bag + the_game.player2_tiles
-        the_game.player2_tiles, the_game.game_bag = pick_from_bag(full_bag, tiles=7)
+    if the_game.players[pturn] == user_id:
+        full_bag = the_game.game_bag + the_game.tiles[pturn]
+        the_game.tiles[pturn], the_game.game_bag = pick_from_bag(full_bag, tiles=7)
+        the_game.tiles = tuple(the_game.tiles)
     else:
         return
     
     the_game.turn_log += "\n{player_name} swapped their tiles".format(
         player_name = get_player_name(user_id),
     )
-    the_game.turn_log = the_game.turn_log.strip()
-    the_game.turn += 1
-    update_game(the_game)
-
-pass_turn_search = re.compile(r"^.* passed on their turn$")
-def pass_turn(the_game, user_id):
-    p_turn = player_turn(the_game.turn)
     
-    if the_game.player1 == user_id and p_turn == 1:
-        pass
-    elif the_game.player2 == user_id and p_turn == 2:
-        pass
-    else:
+    # Check to see if everybody is swapping tiles
+    all_passed = True
+    distance = len(the_game.players)
+    to_check = the_game.turn_log.split("\n")[-distance:]
+    
+    if len(to_check) < len(the_game.players):
         return
     
-    last_log = the_game.turn_log.split("\n")[-1]
-    if pass_turn_search.search(last_log):
+    for t in to_check:
+        if not pass_turn_search.search(t):
+            all_passed = False
+    
+    if all_passed:
         the_game.winner = -1
-        the_game.turn_log += "\n{player_name} passed on their turn".format(
-            player_name = get_player_name(user_id),
-        )
         
         # Now end the game
-        the_game.turn_log += "\nAs both players have ended passed on their turn, the game is ended".format(
-            player_name = get_player_name(user_id),
-        )
-        player_1_name = get_player_name(the_game.player1)
-        player_2_name = get_player_name(the_game.player2)
-       
-        scores = tally_scores(the_game)
-       
-        scores[player_1_name] = scores.get(player_1_name, 0) + scores[2]
-        scores[player_2_name] = scores.get(player_2_name, 0) + scores[1]
-       
-        if scores[player_1_name] > scores[player_2_name]:
-            the_game.winner = the_game.player1
-            the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
-                player_1_name,
-                scores.get(player_1_name, 0),
-                scores.get(player_2_name, 0)
-            )
-            
-        elif scores[player_1_name] < scores[player_2_name]:
-            the_game.winner = the_game.player2
-            the_game.turn_log += "\n\nAfter counting tiles, {} has won the game {} points to {}".format(
-                player_2_name,
-                scores.get(player_2_name, 0),
-                scores.get(player_1_name, 0)
-            )
-           
-        else:
-            # Draw
-            the_game.winner = -1
-            the_game.turn_log += "\n\nAfter counting tiles, the game has ended in a draw"
-        
-        update_game(the_game)
-        
-    else:
-        the_game.turn_log += "\n{player_name} passed on their turn".format(
-            player_name = get_player_name(user_id),
-        )
-        the_game.turn_log = the_game.turn_log.strip()
-        the_game.turn += 1
-        update_game(the_game)
+        the_game.turn_log += "\nAs all players have ended passed on their turn, the game is ended"
+        names = get_player_name(the_game.players)
+        end_game(the_game, names)
+    
+    the_game.turn += 1
+    the_game.turn_log = the_game.turn_log.strip()
+    
+    update_game(the_game)
 
+def end_game(the_game, names):
+    scores = tally_scores(the_game, count_tiles=True)
+    
+    # Print final scores
+    for i, p in enumerate(the_game.players):
+        scores[names[p]] = scores.get(names[p], 0) + scores.get(i, 0)
+        the_game.turn_log += "\n{} has ended on {} points".format(names[p], scores[names[p]])
+        
+        if i in scores:
+            del(scores[i])
+    
+    # Find winner
+    highscore, highplayer = -1, ""
+    draw = False
+    for pname, pscore in scores.items():
+        if pscore > highscore:
+            highscore = pscore
+            highplayer = pname
+            draw = False
+        elif pscore == highscore:
+            highplayer += ", " + pname
+            draw = True
+    
+    # Declare winner
+    if not draw:
+        for i, n in names.items():
+            if n == highplayer:
+                the_game.winner = i
+        the_game.turn_log += "\n\nAfter counting tiles, {} has won the game with {} points".format(
+            highplayer,
+            highscore
+        )
+    
+    elif draw:
+        # Draw
+        the_game.winner = -1
+        the_game.turn_log += "\n\nAfter counting tiles, the game has ended in a draw"
 
 # This is a function you might need to alter to get at the words from the database
 from ...models import (
@@ -555,7 +531,13 @@ def get_words_from_db(words):
     return [w[0] for w in DBSession.query(WordyWord.word).filter(WordyWord.word.in_(words)).limit(len(words))]
 
 def get_player_name(player_id):
-    return DBSession.query(User.actual_name).filter(User.id == player_id).one()[0]
+    if type(player_id) == list:
+        results = {}
+        for uid, uname in DBSession.query(User.id, User.actual_name).filter(User.id.in_(player_id)):
+            results[uid] = uname
+        return results
+    else:
+        return DBSession.query(User.actual_name).filter(User.id == player_id).one()[0]
 
 def update_game(the_game):
     pass
@@ -563,21 +545,25 @@ def update_game(the_game):
     # here to make a hook easier for anything else
 
 line_points = re.compile(r"(.+): [a-zA-Z ]+ for ([0-9]+) points")
-def tally_scores(the_game):
+def tally_scores(the_game, count_tiles=False):
     results = defaultdict(int)
     
     # Add it up from the turn log
     for l in the_game.turn_log.split("\n"):
         r = line_points.search(l.strip())
-       
+        
         if r != None:
             name, points = r.groups()
             results[name] += int(points)
     
-    # Add in remaining tiles
-    results[1] = sum([letter_values[l] for l in the_game.player1_tiles])
-    results[2] = sum([letter_values[l] for l in the_game.player2_tiles])
-    results[3] = sum([letter_values[l] for l in the_game.player2_tiles])
-    results[4] = sum([letter_values[l] for l in the_game.player2_tiles])
+    # Add in remaining tiles, these will be under the player numbers
+    if count_tiles:
+        for i, p in enumerate(the_game.players):
+            temp = 0
+            for j, p2 in enumerate(the_game.players):
+                if j == i: continue
+                temp += sum([letter_values[l] for l in the_game.tiles[j]])
+            
+            results[i] = temp
     
     return results

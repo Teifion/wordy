@@ -6,6 +6,10 @@ from sqlalchemy import (
     ForeignKey,
 )
 
+from sqlalchemy.dialects.postgresql import (
+    ARRAY,
+)
+
 # You will need to point this to wherever your declarative base is
 from ...models import Base
 
@@ -22,19 +26,8 @@ class WordyGame(Base):
     # It defaults to a blank board
     board       = Column(String, nullable=False, default=' '*255)
     
-    # We're assuming a table called users with a property of "id"
-    # I would normally have used PostgreSQL arrays but wanted to keep
-    # it database agnostic
-    player1     = Column(Integer, ForeignKey("users.id"), nullable=False)
-    player2     = Column(Integer, ForeignKey("users.id"), nullable=False)
-    player3     = Column(Integer, ForeignKey("users.id"), nullable=True)
-    player4     = Column(Integer, ForeignKey("users.id"), nullable=True)
-    
-    # This is the tiles currently possessed by each player
-    player1_tiles = Column(String, nullable=False)
-    player2_tiles = Column(String, nullable=False)
-    player3_tiles = Column(String, nullable=True)
-    player4_tiles = Column(String, nullable=True)
+    players     = Column(ARRAY(Integer), nullable=False, default=[])
+    tiles       = Column(ARRAY(String), nullable=False, default=[])
     
     # The total tiles to pull from the bag for each player
     game_bag = Column(String, nullable=False, default="EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ****")

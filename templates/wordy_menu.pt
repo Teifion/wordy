@@ -34,7 +34,7 @@
                 <div class="game_row" tal:repeat="the_game your_turn">
                     <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">Play</a>
                     Turn: ${the_game.turn}<br />
-                    Opponent: ${usernames[the_game.opponent]}
+                    Opponents: ${the_game.opponents}
                     <div style="clear:both;height:0px;">&nbsp;</div>
                 </div>
             </div>
@@ -44,7 +44,7 @@
                 <div class="game_row" tal:repeat="the_game their_turn">
                     <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">View</a>
                     Turn: ${the_game.turn}<br />
-                    Opponent: ${usernames[the_game.opponent]}
+                    Opponents: ${the_game.opponents}
                     <div style="clear:both;height:0px;">&nbsp;</div>
                 </div>
             </div>
@@ -58,7 +58,7 @@
                 <div class="half_game_row" tal:repeat="the_game ended_games">
                     <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">View</a>
                     Turn: ${the_game.turn}<br />
-                    Opponent: ${usernames[the_game.opponent]}
+                    Opponents: ${the_game.opponents}
                     Winner: ${usernames[the_game.winner]}
                     <div style="clear:both;height:0px;">&nbsp;</div>
                 </div>

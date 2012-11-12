@@ -446,7 +446,7 @@
                 <div tal:condition="your_turn == False and the_game.winner == None">The game will automatically check for new moves every minute and then allow you to make a move.
                     <script type="text/javascript">
                         // Check every 30 seconds
-                        var page_check = setInterval("$('#my_turn').load('${request.route_url('games/wordy/check_status', game_id=the_game.id)}', {}, check_turn);", 1000*60);
+                        var page_check = setInterval("$('#my_turn').load('${request.route_url('games/wordy/check_status', game_id=the_game.id)}', {}, check_turn);", 1000*30);
                     </script>
                 </div>
                 
@@ -457,7 +457,13 @@
                 <br /><br />
                 
                 ${structure:turn_log}
-                
+                <div tal:condition="not your_turn and the_game.winner == None">
+                    Currently waiting for ${whose_turn} to take their turn
+                </div>
+                <div tal:condition="your_turn and the_game.winner == None" style="color:#070;font-weight:bold;">
+                    It is your turn
+                </div>
+                    
                 <br /><br />
                 <div tal:condition="the_game.winner == None">
                     <strong>Current scores</strong>
@@ -468,16 +474,20 @@
                 
                 <div style="width:100%;" tal:condition="the_game.winner == None">
                     <!-- Forfeit -->
+                    <!--
                     <form id="foreit_form" action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8">
                         <input type="hidden" name="forfeit" value="forfeit" />
                         <div class="button" onclick="forfeit_dialog();">Forfeit</div>
                     </form>
+                    -->
                     
                     <!-- Pass -->
+                    <!--
                     <form tal:condition="your_turn == True" id="pass_form" action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8">
                         <input type="hidden" name="pass" value="pass" />
                         <div class="button" onclick="pass_dialog();">I can't move</div>
                     </form>
+                    -->
                     
                     <!-- Swap -->
                     <form tal:condition="your_turn == True" id="swap_form" action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8">
