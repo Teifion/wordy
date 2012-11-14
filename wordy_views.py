@@ -11,13 +11,15 @@ from pyramid.httpexceptions import (
 from pyramid.renderers import get_renderer
 from sqlalchemy import or_
 
+from . import achievement_functions
+from . import wordy_functions, wordy_achievements
+
 from ...models import (
     DBSession,
     User,
     WordyGame,
 )
 
-from . import wordy_functions
 # After installation you should remove this view or block it off in some way
 @view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='code')
 def wordy_init(request):
@@ -50,6 +52,9 @@ def wordy_init(request):
             DBSession.execute("DELETE FROM wordy_words")
             DBSession.execute(query)
             DBSession.execute("COMMIT")
+        
+        # Register the achievements
+        achievement_functions.register(wordy_achievements.achievements)
         
         content = "Wordlist inserted correctly"
     else:

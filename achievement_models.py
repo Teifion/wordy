@@ -37,7 +37,8 @@ class Achievement(Base):
     __tablename__ = 'achievements'
     id            = Column(Integer, primary_key=True)
     user          = Column(Integer, ForeignKey("users.id"), nullable=False)
-    item          = Column(Integer, ForeignKey("achievement_list.id"), nullable=False)
+    item          = Column(Integer, ForeignKey("achievement_types.id"), nullable=False)
     
-    awarded       = Column(DateTime, nullable=False)
+    # Is null until actually awarded
+    awarded       = Column(DateTime, nullable=True)
     activation_count = Column(Integer, nullable=False, default=0)

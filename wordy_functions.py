@@ -1,27 +1,8 @@
 import random
 import re
 from collections import defaultdict
-from . import achievement_functions
 
-# Register achievements
-achievement_functions.register([
-    ("wordy_bingo", "Bingo!", "Use all your letters in one go", 5, 5),
-    ("wordy_5_letter", "5 letter word", "5 letter word", 5, 20),
-    ("wordy_6_letter", "6 letter word", "6 letter word", 10, 10),
-    ("wordy_7_letter", "7 letter word", "7 letter word", 15, 8),
-    ("wordy_8_letter", "8 letter word", "8 letter word", 20, 5),
-    ("wordy_9_letter", "9 letter word", "9 letter word", 25, 3),
-    ("wordy_10_letter", "10 letter word", "10 letter word", 30, 1),
-    ("wordy_start_and_end", "Start and end with the same letter", "Having a word start and end with the same letter", 10, 5),
-    ("wordy_1000_tiles", "Well spoken", "Place a total of 100 tiles", 5, 100),
-    ("wordy_1000_tiles", "Eloquent", "Place a total of 500 tiles", 10, 500),
-    ("wordy_1000_tiles", "Sesquipedalian", "Place a total of 1000 tiles", 20, 1000),
-    ("wordy_win_5_games", "Five time champion", "Win 5 games of wordy", 5, 5),
-    ("wordy_win_10_games", "Ten time champion", "Win 10 games of wordy", 10, 5),
-    ("wordy_win_15_games", "Fifteen time champion", "Win 15 games of wordy", 15, 5),
-    ("wordy_win_25_games", "Twentyfive time champion", "Win 25 games of wordy", 20, 5),
-    ("wordy_dominant", "Dominance", "Defeat the same opponent 10 times", 20, 10),
-])
+from . import wordy_achievements
 
 # http://en.wikipedia.org/w/index.php?title=File:Blank_Scrabble_board_with_coordinates.svg&page=1
 # Double/Triple word scores
@@ -404,6 +385,10 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     else:
         word_string = "{} and {}".format(", ".join(words[:-1]), words[-1])
     
+    # They may just want to know how many points this will score
+    if len(new_letters) == 7:
+        points += 50
+    
     the_game.turn_log += "\n{player_name}: {the_word} for {points} points".format(
         player_name = names[the_game.players[pnum]],
         the_word = word_string,
@@ -411,13 +396,14 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     )
     the_game.turn_log = the_game.turn_log.strip()
     
-    # They may just want to know how many points this will score
-    if len(new_letters) == 7:
-        points += 50
+    print(wordy_achievements.check_after_move(player_id, words=words, points=points, letters_used=[l[0] for l in new_letters]))
     
     # Do we need to end the game?
     if scan_for_end(the_game):
         end_game(the_game, names)
+        
+        # for p in the_game.players:
+        #     wordy_achievements.check_after_game_end(p, victor=(True if the_game.winner == p else False))
     
     update_game(the_game)
     return "{} points".format(points)

@@ -2,7 +2,8 @@ from ...models import (
     DBSession,
 )
 
-from .achievement_models import AchievementType
+import datetime
+from .achievement_models import AchievementType, Achievement
 import transaction
 
 def register(achievement_list):
@@ -11,8 +12,6 @@ def register(achievement_list):
     
     # If it's a dictionary convert it into an AchievementType
     achievement_list = [AchievementType(*a) if type(a) == tuple else a for a in achievement_list]
-    
-    return
     
     # Who are we missing?
     names = [a.name for a in achievement_list]
@@ -24,3 +23,27 @@ def register(achievement_list):
         for a in achievement_list:
             if a.name not in found:
                 DBSession.add(a)
+
+def give_achievement(achievement_lookup, user_id, acount=1):
+    the_item = DBSession.query(AchievementType).filter(AchievementType.lookup == achievement_lookup).limit(1).first()
+    
+    if the_item == None:
+        raise KeyError("No item by lookup of '{}'".format(achievement_lookup))
+    
+    the_achievement = DBSession.query(Achievement).filter(
+        Achievement.item == the_item.id, Achievement.user == user_id).limit(1).first()
+    
+    if the_achievement == None:
+        the_achievement                  = Achievement()
+        the_achievement.user             = user_id
+        the_achievement.item             = the_item.id
+        the_achievement.activation_count = 0
+        the_achievement.awarded          = None
+    
+    # No reason to stop counting just because we've achievemed the thing once
+    the_achievement.activation_count += acount
+    
+    if the_achievement.activation_count >= the_item.activation_count and the_achievement.awarded == None:
+        the_achievement.awarded = datetime.datetime.now()
+    
+    DBSession.add(the_achievement)
