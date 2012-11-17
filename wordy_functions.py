@@ -72,7 +72,6 @@ _______________
 """.replace("\n","").replace("_"," ").strip()
 
 "ABCDEFGHIJKLMNOPQRSTUVWXYZ                                                                                                                                                                                                       "
-
 dummy_board = """
 ___Q___G_______
 ___U_P_A_______
@@ -396,14 +395,16 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     )
     the_game.turn_log = the_game.turn_log.strip()
     
-    print(wordy_achievements.check_after_move(player_id, words=words, points=points, letters_used=[l[0] for l in new_letters]))
+    wordy_achievements.check_after_move(player_id, words=words, points=points, letters_used=[l[0] for l in new_letters])
     
     # Do we need to end the game?
     if scan_for_end(the_game):
         end_game(the_game, names)
         
-        # for p in the_game.players:
-        #     wordy_achievements.check_after_game_end(p, victor=(True if the_game.winner == p else False))
+        for p in the_game.players:
+            wordy_achievements.check_after_game_end(p, the_game)
+        
+        wordy_achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
     
     update_game(the_game)
     return "{} points".format(points)
@@ -511,6 +512,7 @@ from ...models import (
     DBSession,
     User,
     WordyWord,
+    WordyGame
 )
 
 def get_words_from_db(words):
@@ -553,3 +555,6 @@ def tally_scores(the_game, count_tiles=False):
             results[i] = temp
     
     return results
+
+def games_won(player_id):
+    return DBSession.query(WordyGame).filter(WordyGame.winner == player_id)
