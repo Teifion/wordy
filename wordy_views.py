@@ -11,7 +11,7 @@ from pyramid.httpexceptions import (
 from pyramid.renderers import get_renderer
 from sqlalchemy import or_
 
-from . import achievement_functions
+from ..achievements import achievement_functions
 from . import wordy_functions, wordy_achievements
 
 from ...models import (
