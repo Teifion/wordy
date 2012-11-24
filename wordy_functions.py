@@ -532,7 +532,7 @@ def update_game(the_game):
     # SQLAlchemy does this automatically for me but it's
     # here to make a hook easier for anything else
 
-line_points = re.compile(r"(.+): [a-zA-Z ]+ for ([0-9]+) points")
+line_points = re.compile(r"(.+): [a-zA-Z, ]+ for ([0-9]+) points")
 def tally_scores(the_game, count_tiles=False):
     results = defaultdict(int)
     
