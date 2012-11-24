@@ -151,6 +151,7 @@
             var the_board = ${the_board};
             var player_letters = ${player_letters};
             
+            var game_over = ${"true" if the_game.winner != None else "false"};
             var wordy_swap_route = "${request.route_url("games/wordy/make_move", game_id=the_game.id)}";
             var wordy_move_route = "${request.route_url("games/wordy/make_move", game_id=the_game.id)}";
             var wordy_test_route = "${request.route_url("games/wordy/test_move", game_id=the_game.id)}";
@@ -249,6 +250,12 @@
 
             function build_tray ()
             {
+                if (game_over == true)
+                {
+                    $('#tray_wrapper').html("");
+                    return;
+                }
+                
                 var tray_wrapper = "";
                 for (var i = 0; i < player_letters.length; i++)
                 {
