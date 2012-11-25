@@ -1,5 +1,7 @@
-from ..achievements.achievement_functions import give_achievement
+from ..achievements import achievement_functions
 from collections import defaultdict
+
+give_achievement = achievement_functions.give_achievement
 
 # Register achievements
 achievements = (
@@ -10,8 +12,8 @@ achievements = (
     ("wordy_8_letter", "Octuplite", "Score using 5 eight letter words", 20, 5),
     ("wordy_9_letter", "Nontuplite", "Score using 3 nine letter words", 25, 3),
     ("wordy_10_letter", "Dectuplite", "Score using a ten letter word", 30, 1),
-    
     ("wordy_start_and_end", "Start with the end", "Having a word start and end with the same letter", 10, 5),
+    
     ("wordy_100_tiles", "Well spoken", "Place a total of 100 tiles", 5, 100),
     ("wordy_500_tiles", "Eloquent", "Place a total of 500 tiles", 10, 500),
     ("wordy_1000_tiles", "Sesquipedalian", "Place a total of 1000 tiles", 20, 1000),
@@ -28,6 +30,29 @@ achievements = (
     ("wordy_win_25_games", "Twentyfive time champion", "Win 25 games of wordy", 20, 5),
     ("wordy_dominant", "Dominance", "Defeat the same opponent 10 times", 20, 1),
 )
+
+# Set up the groupings
+achievement_functions.sections['Wordy'] = {
+    "name":"Wordy",
+    "sub_categories": {
+        "GargantuanWords": {
+            "name": "Gargantuan Words",
+            "achievements": ("wordy_bingo", "wordy_5_letter", "wordy_6_letter", "wordy_7_letter", "wordy_8_letter", "wordy_9_letter", "wordy_10_letter", "wordy_start_and_end"),
+        },
+        "MultitudinousTiles": {
+            "name": "Multitudinous Tiles",
+            "achievements": ("wordy_100_tiles", "wordy_500_tiles", "wordy_1000_tiles"),
+        },
+        "MonumentalScores": {
+            "name": "Monumental Scores",
+            "achievements": ("wordy_50_pointer", "wordy_75_pointer", "wordy_100_pointer", "wordy_125_pointer", "wordy_150_pointer"),
+        },
+        "MyriadVictories": {
+            "name": "Myriadic Victories",
+            "achievements": ("wordy_win_5_games", "wordy_win_10_games", "wordy_win_15_games", "wordy_win_25_games", "wordy_dominant"),
+        }
+    }
+}
 
 def check_after_move(user_id, words=[], points=0, letters_used=[]):
     achieved = []
