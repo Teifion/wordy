@@ -143,13 +143,12 @@ def new_game(request):
             found_names.append(uname)
         
         if len(found_opponents) != len(opponents):
-            message = """I'm sorry, we can't all your opponents, we can only find "{}" """.format(request.params['opponent_name'].strip())
+            message = """I'm sorry, we can't find all your opponents"""
             return dict(
                 title        = "Wordy - New game",
                 layout       = layout,
                 message      = message,
                 flash_colour = flash_colour,
-                opponent_name = request.params['opponent_name'].strip(),
             )
         
         new_game = WordyGame()

@@ -25,9 +25,9 @@ achievements = (
     ("wordy_150_pointer", "150 points", "Score 150+ points with one move", 25, 1),
     
     ("wordy_win_5_games", "Five time champion", "Win 5 games of wordy", 5, 5),
-    ("wordy_win_10_games", "Ten time champion", "Win 10 games of wordy", 10, 5),
-    ("wordy_win_15_games", "Fifteen time champion", "Win 15 games of wordy", 15, 5),
-    ("wordy_win_25_games", "Twentyfive time champion", "Win 25 games of wordy", 20, 5),
+    ("wordy_win_10_games", "Ten time champion", "Win 10 games of wordy", 10, 10),
+    ("wordy_win_15_games", "Fifteen time champion", "Win 15 games of wordy", 15, 15),
+    ("wordy_win_25_games", "Twentyfive time champion", "Win 25 games of wordy", 20, 25),
     ("wordy_dominant", "Dominance", "Defeat the same opponent 10 times", 20, 1),
 )
 
