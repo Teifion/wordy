@@ -19,10 +19,6 @@
     </style>
     
     <div metal:fill-slot="content">
-        <div class="error">
-            I have now added achievements to the system. You can view (in theory) your achievements via <a href="${request.route_url('achievements_dashboard')}">this link</a>
-        </div>
-        
         <div tal:condition="len(game_list) == 0">
             You have no active games, why not challenge someone?
             <a href="${request.route_url('games/wordy/new_game')}" class="button">Find an opponent</a>

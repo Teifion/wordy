@@ -160,7 +160,7 @@ def string_to_board(board_string):
 def board_to_string(board_lists):
     return "".join(["".join(b) for b in board_lists])
 
-def pick_from_bag(the_bag, tiles=7, attempt=7):
+def pick_from_bag(the_bag, tiles=7, attempt=7, existing_tiles=""):
     if type(the_bag) == str:
         new_bag = list(the_bag)
     else:
@@ -172,12 +172,13 @@ def pick_from_bag(the_bag, tiles=7, attempt=7):
         r = random.randint(0, len(new_bag)-1)
         letters.append(new_bag.pop(r))
     
-    vowel_count = 0
-    for v in vowels:
-        vowel_count += letters.count(v)
-    
     # Try to never have too many or too few vowels if we can help it
     # technically this is not part of the core scrabble rules
+    total_new_tiles = existing_tiles + "".join(letters)
+    vowel_count = 0
+    for v in vowels:
+        vowel_count += total_new_tiles.count(v)
+    
     if vowel_count < 2 or vowel_count > 5:
         if attempt > 1:
             return pick_from_bag(the_bag, tiles=tiles, attempt=attempt-1)
@@ -374,11 +375,11 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         else:
             raise KeyError("{} and {} are not valid words".format(", ".join(invalid[:-1]), invalid[-1]))
     
-    # At this stage it's been a success, we need to update the board and player tiles
-    new_tiles, new_bag = pick_from_bag(the_game.game_bag, tiles=len(new_letters))
-    
     for l, x, y in new_letters:
         player_letters = player_letters.replace(l, "", 1)
+    
+    # At this stage it's been a success, we need to update the board and player tiles
+    new_tiles, new_bag = pick_from_bag(the_game.game_bag, tiles=len(new_letters), existing_tiles=player_letters)
     
     the_game.board = board_to_string(b)
     the_game.turn += 1
