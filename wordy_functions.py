@@ -134,6 +134,8 @@ letter_values = {
     "_": 0,
 }
 
+vowels = "AEIOU"
+
 def _pp_board(the_board):
     if type(the_board) == str:
         the_board = string_to_board(the_board)
@@ -158,7 +160,7 @@ def string_to_board(board_string):
 def board_to_string(board_lists):
     return "".join(["".join(b) for b in board_lists])
 
-def pick_from_bag(the_bag, tiles=7):
+def pick_from_bag(the_bag, tiles=7, attempt=7):
     if type(the_bag) == str:
         new_bag = list(the_bag)
     else:
@@ -169,6 +171,16 @@ def pick_from_bag(the_bag, tiles=7):
     while len(letters) < tiles and len(new_bag) > 0:
         r = random.randint(0, len(new_bag)-1)
         letters.append(new_bag.pop(r))
+    
+    vowel_count = 0
+    for v in vowels:
+        vowel_count += letters.count(v)
+    
+    # Try to never have too many or too few vowels if we can help it
+    # technically this is not part of the core scrabble rules
+    if vowel_count < 2 or vowel_count > 5:
+        if attempt > 1:
+            return pick_from_bag(the_bag, tiles=tiles, attempt=attempt-1)
     
     return "".join(letters), "".join(new_bag)
 
@@ -381,6 +393,8 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     words = [w.title() for w in words]
     if len(words) == 1:
         word_string = words[0]
+    elif len(words) == 0:
+        raise KeyError("There's a weird error that keeps cropping up every now and again and I can't reproduce it but I believe it is caused by the button being submitted twice so nobody actually sees this error message. If you can see this error then let me know.")
     else:
         word_string = "{} and {}".format(", ".join(words[:-1]), words[-1])
     
