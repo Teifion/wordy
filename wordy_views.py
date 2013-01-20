@@ -1,4 +1,5 @@
 import transaction
+import datetime
 
 from pyramid.view import (
     view_config,
@@ -121,6 +122,7 @@ def wordy_menu(request):
         your_turn  = your_turn,
         their_turn = their_turn,
         ended_games = ended_games,
+        now = datetime.datetime.now(),
     )
 
 @view_config(route_name='games/wordy/new_game', renderer='templates/wordy_new_game.pt', permission='loggedin')
@@ -207,6 +209,7 @@ def view_game(request):
         your_turn = (the_game.players[pturn] == request.user.id),
         whose_turn = wordy_functions.get_player_name(the_game.players[pturn]),
         scores = scores,
+        now = datetime.datetime.now(),
     )
 
 @view_config(route_name='games/wordy/make_move', renderer='string', permission='loggedin')
@@ -218,9 +221,13 @@ def make_move(request):
     player_number = wordy_functions.player_number(the_game, request.user.id)
     
     # Special "moves"
-    # if "forfeit" in request.params:
-    #     wordy_functions.forfeit_game(the_game, request.user.id)
-    #     return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
+    if "forfeit" in request.params:
+        wordy_functions.forfeit_game(the_game, request.user.id)
+        return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
+    
+    if "end_game" in request.params:
+        wordy_functions.premature_end_game(the_game, request.user.id)
+        return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
     
     if "swap" in request.params:
         wordy_functions.swap_letters(the_game, request.user.id)

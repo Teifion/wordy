@@ -1,5 +1,6 @@
 import random
 import re
+import datetime
 from collections import defaultdict
 
 from . import wordy_achievements
@@ -431,18 +432,33 @@ def scan_for_end(the_game):
     return False
 
 def forfeit_game(the_game, user_id):
-    if the_game.player1 == user_id:
-        the_game.winner = the_game.player2
+    if len(the_game.players) > 2:
+        raise Exception("Unable to forfeit in a game with more than two players")
+    
+    if the_game.players[0] == user_id:
+        the_game.winner = the_game.players[1]
         the_game.turn_log += "\nForfeit by {}\nVictory for {}".format(
-            get_player_name(the_game.player1),
-            get_player_name(the_game.player2),
+            get_player_name(the_game.players[0]),
+            get_player_name(the_game.players[1]),
         )
-    elif the_game.player2 == user_id:
-        the_game.winner = the_game.player1
+    elif the_game.players[1] == user_id:
+        the_game.winner = the_game.players[0]
         the_game.turn_log += "\nForfeit by {}\nVictory for {}".format(
-            get_player_name(the_game.player2),
-            get_player_name(the_game.player1),
+            get_player_name(the_game.players[1]),
+            get_player_name(the_game.players[0]),
         )
+
+def premature_end_game(the_game, user_id):
+    if len(the_game.players) > 2:
+        raise Exception("Unable to end a game with more than two players")
+    
+    pturn = 1 - player_turn(the_game)
+    
+    the_game.winner = the_game.players[pturn]
+    the_game.turn_log += "\nAWOL by {}\nVictory for {}".format(
+        get_player_name(the_game.players[1-pturn]),
+        get_player_name(the_game.players[pturn]),
+    )
 
 pass_turn_search = re.compile(r"^.* swapped their tiles$")
 def swap_letters(the_game, user_id):
@@ -481,6 +497,7 @@ def swap_letters(the_game, user_id):
     
     the_game.turn += 1
     the_game.turn_log = the_game.turn_log.strip()
+    the_game.last_move = datetime.datetime.now()
     
     update_game(the_game)
 

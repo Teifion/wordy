@@ -4,6 +4,7 @@ from sqlalchemy import (
     Text,
     String,
     ForeignKey,
+    DateTime,
 )
 
 from sqlalchemy.dialects.postgresql import (
@@ -33,6 +34,7 @@ class WordyGame(Base):
     game_bag = Column(String, nullable=False, default="EEEEEEEEEEEEAAAAAAAAAIIIIIIIIIOOOOOOOONNNNNNRRRRRRTTTTTTLLLLSSSSUUUUDDDDGGGBBCCMMPPFFHHVVWWYYKJXQZ****")
     
     winner = Column(Integer, ForeignKey("users.id"), nullable=True)
+    last_move = Column(DateTime, nullable=False)
 
 class WordyWord(Base):
     __tablename__ = 'wordy_words'

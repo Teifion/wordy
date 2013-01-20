@@ -32,7 +32,9 @@
                 <h3>Games awaiting your move</h3>
                 <div class="game_row" tal:repeat="the_game your_turn">
                     <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">Play</a>
-                    Turn: ${the_game.turn}<br />
+                    Turn: ${the_game.turn}
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    Last move: ${(now - the_game.last_move).days} days ago<br />
                     Opponents: ${", ".join([usernames[o] for o in the_game.opponents])}
                     <div style="clear:both;height:0px;">&nbsp;</div>
                 </div>
@@ -42,7 +44,9 @@
                 <h3>Games awaiting opponent's move</h3>
                 <div class="game_row" tal:repeat="the_game their_turn">
                     <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">View</a>
-                    Turn: ${the_game.turn}<br />
+                    Turn: ${the_game.turn}
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    Last move: ${(now - the_game.last_move).days} days ago<br />
                     Opponents: ${", ".join([usernames[o] for o in the_game.opponents])}
                     <div style="clear:both;height:0px;">&nbsp;</div>
                 </div>
@@ -53,10 +57,13 @@
             <div onclick="$('#ended_games').show(); $('#show_finished_button').hide();" id="show_finished_button" class="inbutton">Show ${len(ended_games)} finished games</div>
             
             <div id="ended_games" style="display:none;">
+                <br /><br />
                 <h3>Completed games</h3>
                 <div class="half_game_row" tal:repeat="the_game ended_games">
                     <a style="float:left;" class="inbutton" href="${request.route_url('games/wordy/game', game_id=the_game.id)}">View</a>
-                    Turn: ${the_game.turn}<br />
+                    Turn: ${the_game.turn}
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    Last move: ${(now - the_game.last_move).days} days ago<br />
                     Opponents: ${", ".join([usernames[o] for o in the_game.opponents])}<br />
                     Winner: ${usernames[the_game.winner]}
                     <div style="clear:both;height:0px;">&nbsp;</div>
