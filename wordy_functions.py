@@ -447,6 +447,8 @@ def forfeit_game(the_game, user_id):
             get_player_name(the_game.players[1]),
             get_player_name(the_game.players[0]),
         )
+    
+    wordy_achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
 
 def premature_end_game(the_game, user_id):
     if len(the_game.players) > 2:
@@ -459,6 +461,8 @@ def premature_end_game(the_game, user_id):
         get_player_name(the_game.players[1-pturn]),
         get_player_name(the_game.players[pturn]),
     )
+    
+    wordy_achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
 
 pass_turn_search = re.compile(r"^.* swapped their tiles$")
 def swap_letters(the_game, user_id):
