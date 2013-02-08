@@ -422,6 +422,7 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
         
         wordy_achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
     
+    the_game.last_move = datetime.datetime.now()
     update_game(the_game)
     return "{} points".format(points)
 

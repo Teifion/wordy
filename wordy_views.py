@@ -24,7 +24,7 @@ from ...models import (
 # After installation you should remove this view or block it off in some way
 @view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='code')
 def wordy_init(request):
-    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
     if "form.submitted" in request.params:
         f = request.params['wordlist'].file
@@ -112,7 +112,7 @@ def wordy_menu(request):
         usernames[uid] = uname
     usernames[-1] = "Draw"
     
-    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
     return dict(
         title      = "Wordy",
@@ -129,7 +129,7 @@ def wordy_menu(request):
 def new_game(request):
     message = ""
     flash_colour = "A00"
-    layout  = get_renderer('../../templates/layouts/empty.pt').implementation()
+    layout  = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
     if "form.submitted" in request.params:
         opponents = list(filter(None, [
@@ -181,7 +181,7 @@ def new_game(request):
 
 @view_config(route_name='games/wordy/game', renderer='templates/wordy_game.pt', permission='loggedin')
 def view_game(request):
-    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
@@ -296,7 +296,7 @@ def check_status(request):
 
 @view_config(route_name='games/wordy/get_updated_board', renderer='templates/wordy_game.pt', permission='loggedin')
 def get_updated_board(request):
-    layout = get_renderer('../../templates/layouts/empty.pt').implementation()
+    layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
     request.do_not_log = True
     return dict(
