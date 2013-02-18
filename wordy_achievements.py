@@ -1,4 +1,4 @@
-from ..achievements import achievement_functions
+from ...achievements import achievement_functions
 from collections import defaultdict
 
 give_achievement = achievement_functions.give_achievement
