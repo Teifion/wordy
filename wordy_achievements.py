@@ -1,7 +1,11 @@
-from ...achievements import achievement_functions
-from collections import defaultdict
+try:
+    from ...achievements import achievement_functions
+    give_achievement = achievement_functions.give_achievement
+except ImportError:
+    achievement_functions = None
+    give_achievement = None
 
-give_achievement = achievement_functions.give_achievement
+from collections import defaultdict
 
 # Register achievements
 achievements = (
@@ -55,6 +59,8 @@ achievement_functions.sections['Wordy'] = {
 }
 
 def check_after_move(user_id, words=[], points=0, letters_used=[]):
+    if give_achievement == None: return
+    
     achieved = []
     
     for w in words:
@@ -84,9 +90,11 @@ def check_after_move(user_id, words=[], points=0, letters_used=[]):
     return achieved
 
 def check_after_game_end(user_id, the_game):
+    if give_achievement == None: return
     return []
 
 def check_after_game_win(user_id, games_won):
+    if give_achievement == None: return
     achieved = []
     
     achieved.append(give_achievement("wordy_win_5_games", user_id))
