@@ -190,7 +190,13 @@ def view_game(request):
     player_number = wordy_functions.player_number(the_game, request.user.id)
     
     pturn = wordy_functions.player_turn(the_game)
-    letters = the_game.tiles[player_number]
+    
+    if player_number == None:
+        letters = ""
+        spectator = True
+    else:
+        letters = the_game.tiles[player_number]
+        spectator = False
     
     the_board = wordy_functions.string_to_board(the_game.board.lower())
     scores = wordy_functions.tally_scores(the_game, count_tiles=False)
@@ -210,6 +216,7 @@ def view_game(request):
         whose_turn = wordy_functions.get_player_name(the_game.players[pturn]),
         scores = scores,
         now = datetime.datetime.now(),
+        spectator = spectator,
     )
 
 @view_config(route_name='games/wordy/make_move', renderer='string', permission='loggedin')

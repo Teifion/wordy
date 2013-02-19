@@ -470,14 +470,14 @@
                 <div class="button" onclick="$('#wordy_right_nav').hide(); $('#wordy_bottom_nav').show();">
                     Remove sidebar
                 </div>
-                <div tal:condition="your_turn == False and the_game.winner == None">The game will automatically check for new moves every minute and then allow you to make a move.
+                <div tal:condition="your_turn == False and the_game.winner == None and spectator == False">The game will automatically check for new moves every minute and then allow you to make a move.
                     <script type="text/javascript">
                         // Check every 30 seconds
                         var page_check = setInterval("$('#my_turn').load('${request.route_url('games/wordy/check_status', game_id=the_game.id)}', {}, check_turn);", 1000*30);
                     </script>
                 </div>
                 
-                <div class="button" id="recall_button" tal:condition="the_game.winner == None">Recall</div>
+                <div class="button" id="recall_button" tal:condition="the_game.winner == None and spectator == False">Recall</div>
                 <br />
                 
                 <div class="button" id="submit_button" tal:condition="your_turn == True">Submit</div>
@@ -502,7 +502,7 @@
                 <div style="width:100%;" tal:condition="the_game.winner == None">
                     <!-- Forfeit -->
                     
-                    <form id="foreit_form" action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8" tal:condition="len(the_game.players) == 2">
+                    <form id="foreit_form" action="${request.route_url('games/wordy/make_move', game_id=the_game.id)}" method="post" accept-charset="utf-8" tal:condition="len(the_game.players) == 2 and spectator == False">
                         <input type="hidden" name="forfeit" value="forfeit" />
                         <div class="button" onclick="forfeit_dialog();">Forfeit</div>
                     </form>
@@ -542,7 +542,7 @@
         </form>
         
         <div id="wordy_bottom_nav" style="display:none; width:740px;">
-            <div class="inbutton" id="recall_button2" tal:condition="the_game.winner == None">Recall</div>
+            <div class="inbutton" id="recall_button2" tal:condition="the_game.winner == None" tal:condition="spectator == False">Recall</div>
             <div class="inbutton" id="recall_button2" onclick="$('#wordy_bottom_nav').hide(); $('#wordy_right_nav').show();">Show sidebar</div>
             <div class="inbutton" id="submit_button2" tal:condition="your_turn == True" style="float:right;">Submit</div>
         </div>

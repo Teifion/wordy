@@ -193,7 +193,7 @@ def player_number(the_game, user_id):
     if user_id in the_game.players:
         return the_game.players.index(user_id)
     else:
-        raise Exception("You are not a player")
+        return None
 
 def perform_move(the_game, player_id, new_letters):
     return attempt_move(the_game, player_id, new_letters, perform=True)
