@@ -470,6 +470,9 @@
                 <div class="button" onclick="$('#wordy_right_nav').hide(); $('#wordy_bottom_nav').show();">
                     Remove sidebar
                 </div>
+                <div class="button" onclick='$("#share_dialog").dialog({resizable: false,height: 250,width: 600,modal: true,buttons: {Done: function() {$(this).dialog("close");}}});'>
+                    Share
+                </div>
                 <div tal:condition="your_turn == False and the_game.winner == None and spectator == False">The game will automatically check for new moves every minute and then allow you to make a move.
                     <script type="text/javascript">
                         // Check every 30 seconds
@@ -549,6 +552,12 @@
         
         <div id="my_turn" style="display:none;">
             &nbsp;
+        </div>
+        
+        <div id="share_dialog" title="Share this game" style="display:none;">
+            <p>Send this link to a colleage and they'll be able to view the game (though cannot see which tiles you have).</p>
+            
+            <input type="text" value="${request.route_url('games/wordy/game', game_id=the_game.id)}" size="60"/>
         </div>
         
         <div id="end_game_dialog" title="End game?" style="display:none;">
