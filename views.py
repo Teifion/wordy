@@ -13,16 +13,19 @@ from pyramid.renderers import get_renderer
 from sqlalchemy import or_
 
 from ...achievements import achievement_functions
-from . import wordy_functions, wordy_achievements
+from .lib import func, achievements
+
+from . models import WordyGame
 
 from ...models import (
     DBSession,
     User,
-    WordyGame,
 )
 
+from .config import config
+
 # After installation you should remove this view or block it off in some way
-def wordy_init(request):
+def init(request):
     layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
     if "form.submitted" in request.params:
@@ -54,7 +57,7 @@ def wordy_init(request):
             DBSession.execute("COMMIT")
         
         # Register the achievements
-        achievement_functions.register(wordy_achievements.achievements)
+        achievement_functions.register(achievements.achievements)
         
         content = "Wordlist inserted correctly"
     else:
@@ -77,7 +80,7 @@ def wordy_init(request):
         content = content,
     )
 
-def wordy_menu(request):
+def menu(request):
     # I've got my userid tied into the request object via the authentication system
     user_id = request.user.id
     
@@ -88,7 +91,7 @@ def wordy_menu(request):
     their_turn = []
     ended_games = []
     for g in game_list:
-        cturn = wordy_functions.player_turn(g)
+        cturn = func.player_turn(g)
         user_ids.extend(g.players)
         
         # Get a list of all the players in the game who are not us
@@ -155,11 +158,11 @@ def new_game(request):
         new_game.last_move = datetime.datetime.now()
         
         # Setup the initial tiles
-        the_bag = wordy_functions.default_bag
+        the_bag = func.default_bag
         new_game.tiles = []
         
         for p in new_game.players:
-            new_tiles, the_bag = wordy_functions.pick_from_bag(the_bag, tiles=7)
+            new_tiles, the_bag = func.pick_from_bag(the_bag, tiles=7)
             new_game.tiles.append(new_tiles)
         
         new_game.game_bag = str(the_bag)
@@ -177,16 +180,16 @@ def new_game(request):
         opponent_name = "",
     )
 
-def view_game(request):
+def game(request):
     layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
     
     # Get our player number
-    player_number = wordy_functions.player_number(the_game, request.user.id)
+    player_number = func.player_number(the_game, request.user.id)
     
-    pturn = wordy_functions.player_turn(the_game)
+    pturn = func.player_turn(the_game)
     
     if player_number == None:
         letters = ""
@@ -195,8 +198,8 @@ def view_game(request):
         letters = the_game.tiles[player_number]
         spectator = False
     
-    the_board = wordy_functions.string_to_board(the_game.board.lower())
-    scores = wordy_functions.tally_scores(the_game, count_tiles=False)
+    the_board = func.string_to_board(the_game.board.lower())
+    scores = func.tally_scores(the_game, count_tiles=False)
     
     turn_log = []
     for l in the_game.turn_log.split("\n"):
@@ -210,7 +213,7 @@ def view_game(request):
         turn_log = "<br />".join(turn_log),
         the_game = the_game,
         your_turn = (the_game.players[pturn] == request.user.id),
-        whose_turn = wordy_functions.get_player_name(the_game.players[pturn]),
+        whose_turn = func.get_player_name(the_game.players[pturn]),
         scores = scores,
         now = datetime.datetime.now(),
         spectator = spectator,
@@ -221,23 +224,23 @@ def make_move(request):
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
     
     # Get our player number
-    player_number = wordy_functions.player_number(the_game, request.user.id)
+    player_number = func.player_number(the_game, request.user.id)
     
     # Special "moves"
     if "forfeit" in request.params:
-        wordy_functions.forfeit_game(the_game, request.user.id)
+        func.forfeit_game(the_game, request.user.id)
         return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
     
     if "end_game" in request.params:
-        wordy_functions.premature_end_game(the_game, request.user.id)
+        func.premature_end_game(the_game, request.user.id)
         return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
     
     if "swap" in request.params:
-        wordy_functions.swap_letters(the_game, request.user.id)
+        func.swap_letters(the_game, request.user.id)
         return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
     
     if "pass" in request.params:
-        wordy_functions.pass_turn(the_game, request.user.id)
+        func.pass_turn(the_game, request.user.id)
         return HTTPFound(location = request.route_url('games/wordy/game', game_id=the_game.id))
     
     player_letters = the_game.tiles[player_number]
@@ -257,7 +260,7 @@ def make_move(request):
         return "failure:You didn't make a move"
     
     try:
-        result = "success:%s" % wordy_functions.perform_move(the_game, request.user.id, new_letters)
+        result = "success:%s" % func.perform_move(the_game, request.user.id, new_letters)
     except KeyError as e:
         result = "failure:%s" % e.args[0]
     
@@ -269,7 +272,7 @@ def test_move(request):
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
     
     # Get our player number
-    player_number = wordy_functions.player_number(the_game, request.user.id)
+    player_number = func.player_number(the_game, request.user.id)
     
     player_letters = the_game.tiles[player_number]
     
@@ -283,7 +286,7 @@ def test_move(request):
         return "failure:You didn't make a move"
     
     try:
-        result = wordy_functions.attempt_move(the_game, request.user.id, new_letters)
+        result = func.attempt_move(the_game, request.user.id, new_letters)
     except Exception:
         result = 0
     
@@ -294,7 +297,7 @@ def test_move(request):
 def check_status(request):
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).one()
-    pturn = wordy_functions.player_turn(the_game)
+    pturn = func.player_turn(the_game)
     
     request.do_not_log = True
     return str((the_game.players[pturn] == request.user.id))

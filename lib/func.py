@@ -3,7 +3,7 @@ import re
 import datetime
 from collections import defaultdict
 
-from . import wordy_achievements
+from . import achievements
 
 # http://en.wikipedia.org/w/index.php?title=File:Blank_Scrabble_board_with_coordinates.svg&page=1
 # Double/Triple word scores
@@ -411,16 +411,16 @@ def attempt_move(the_game, player_id, new_letters, perform=False):
     )
     the_game.turn_log = the_game.turn_log.strip()
     
-    wordy_achievements.check_after_move(player_id, words=words, points=points, letters_used=[l[0] for l in new_letters])
+    achievements.check_after_move(player_id, words=words, points=points, letters_used=[l[0] for l in new_letters])
     
     # Do we need to end the game?
     if scan_for_end(the_game):
         end_game(the_game, names)
         
         for p in the_game.players:
-            wordy_achievements.check_after_game_end(p, the_game)
+            achievements.check_after_game_end(p, the_game)
         
-        wordy_achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
+        achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
     
     the_game.last_move = datetime.datetime.now()
     update_game(the_game)
@@ -449,7 +449,7 @@ def forfeit_game(the_game, user_id):
             get_player_name(the_game.players[0]),
         )
     
-    wordy_achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
+    achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
 
 def premature_end_game(the_game, user_id):
     if len(the_game.players) > 2:
@@ -463,7 +463,7 @@ def premature_end_game(the_game, user_id):
         get_player_name(the_game.players[pturn]),
     )
     
-    wordy_achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
+    achievements.check_after_game_win(the_game.winner, games_won(the_game.winner))
 
 pass_turn_search = re.compile(r"^.* swapped their tiles$")
 def swap_letters(the_game, user_id):
@@ -545,11 +545,14 @@ def end_game(the_game, names):
         the_game.turn_log += "\n\nAfter counting tiles, the game has ended in a draw"
 
 # This is a function you might need to alter to get at the words from the database
-from ...models import (
+from ....core.models import (
     DBSession,
     User,
+)
+
+from ..models import (
     WordyWord,
-    WordyGame
+    WordyGame,
 )
 
 def get_words_from_db(words):
