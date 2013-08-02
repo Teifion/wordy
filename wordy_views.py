@@ -155,6 +155,7 @@ def new_game(request):
         
         new_game = WordyGame()
         new_game.players = [request.user.id] + found_opponents
+        new_game.last_move = datetime.datetime.now()
         
         # Setup the initial tiles
         the_bag = wordy_functions.default_bag
@@ -251,7 +252,11 @@ def make_move(request):
     for k, tile_info in request.params.items():
         if tile_info != "":
             l, x, y = tile_info.split("_")
-            new_letters.append((player_letters[int(l)], int(x), int(y)))
+            
+            try:
+                new_letters.append((player_letters[int(l)], int(x), int(y)))
+            except Exception as e:
+                return "failure:List index exception. I can't work out why this is happening or if you even see anything. If you do see this, please let Teifion know."
     
     if new_letters == []:
         return "failure:You didn't make a move"
