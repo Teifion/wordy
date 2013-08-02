@@ -22,7 +22,6 @@ from ...models import (
 )
 
 # After installation you should remove this view or block it off in some way
-@view_config(route_name='games/wordy/init', renderer='templates/wordy_blank.pt', permission='code')
 def wordy_init(request):
     layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
@@ -78,7 +77,6 @@ def wordy_init(request):
         content = content,
     )
 
-@view_config(route_name='games/wordy', renderer='templates/wordy_menu.pt', permission='loggedin')
 def wordy_menu(request):
     # I've got my userid tied into the request object via the authentication system
     user_id = request.user.id
@@ -125,7 +123,6 @@ def wordy_menu(request):
         now = datetime.datetime.now(),
     )
 
-@view_config(route_name='games/wordy/new_game', renderer='templates/wordy_new_game.pt', permission='loggedin')
 def new_game(request):
     message = ""
     flash_colour = "A00"
@@ -180,7 +177,6 @@ def new_game(request):
         opponent_name = "",
     )
 
-@view_config(route_name='games/wordy/game', renderer='templates/wordy_game.pt', permission='loggedin')
 def view_game(request):
     layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
@@ -220,7 +216,6 @@ def view_game(request):
         spectator = spectator,
     )
 
-@view_config(route_name='games/wordy/make_move', renderer='string', permission='loggedin')
 def make_move(request):
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
@@ -269,7 +264,6 @@ def make_move(request):
     request.do_not_log = True
     return result
 
-@view_config(route_name='games/wordy/test_move', renderer='string', permission='view')
 def test_move(request):
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).first()
@@ -297,7 +291,6 @@ def test_move(request):
     return result
 
 # Is it my turn yet?
-@view_config(route_name='games/wordy/check_status', renderer='string', permission='loggedin')
 def check_status(request):
     game_id = int(request.matchdict['game_id'])
     the_game = DBSession.query(WordyGame).filter(WordyGame.id == game_id).one()
@@ -306,7 +299,6 @@ def check_status(request):
     request.do_not_log = True
     return str((the_game.players[pturn] == request.user.id))
 
-@view_config(route_name='games/wordy/get_updated_board', renderer='templates/wordy_game.pt', permission='loggedin')
 def get_updated_board(request):
     layout = get_renderer('../../templates/layouts/viewer.pt').implementation()
     
