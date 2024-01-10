@@ -4,9 +4,6 @@ This game was designed to be used primarily as part of a Pyramid application (us
 
 I made this project to add to a program at work. This software is relased under a BSD license (do what you want with it but I'm not to blame for anything that happens as a result).
 
-I got the wordlist from http://www.becomeawordgameexpert.com/wordlists.htm, there are loads of other very cool word lists on that page, well worth a look at too.
-
-
 
 You'll want to add the following paths for a Pyramid application:
 
